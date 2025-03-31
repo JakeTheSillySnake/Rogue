@@ -134,3 +134,11 @@ Module.symvers
 Mkfile.old
 Makefile.old
 dkms.conf
+/.vs/AP1_CS_P01/v17/.wsuo
+/.vs/AP1_CS_P01/v17/DocumentLayout.json
+/.vs/Rogue/DesignTimeBuild/.dtbcache.v2
+/.vs/Rogue/FileContentIndex/27067eda-1fb7-4d08-822b-a971149cac07.vsidx
+/.vs/Rogue/FileContentIndex/48101b31-0179-4087-aaff-b2aed8a64ee8.vsidx
+/.vs/Rogue/FileContentIndex
+/.vs/Rogue/v17
+*.json
