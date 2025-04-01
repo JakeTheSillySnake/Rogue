@@ -14,7 +14,7 @@ enum Colors {
 public class Entity {
   public int x, y, hp, hp_max, str, agl, color;
   public string symbol = "";
-  public int valLow = 5, valMid = 7, valHigh = 10;
+  public int valLow = 3, valMid = 5, valHigh = 10;
 
   public Entity() {}
   public void InitCoords(int x, int y) {
@@ -29,11 +29,11 @@ public class Entity {
     // TODO: dist is 1000 if no path exists
     return dist;
   }
-  // TODO: public abstract void Attack();
 }
 
 public class Player : Entity {
   public int lvl = 1;
+  private bool _asleep = false;
 
   public Player() {
     symbol = "p";
@@ -45,6 +45,10 @@ public class Player : Entity {
     InitCoords(34, 14);
   }
   public void Move(int action, Level lvl) {
+    if (_asleep) {
+        _asleep = false;
+        return;
+    }
     if ((action == 'a' || action == 'A') && lvl.field[y, x - 1] == Level.EMPTY)
       x--;
     if ((action == 'd' || action == 'D') && lvl.field[y, x + 1] == Level.EMPTY)
@@ -53,6 +57,21 @@ public class Player : Entity {
       y--;
     if ((action == 's' || action == 'S') && lvl.field[y + 1, x] == Level.EMPTY)
       y++;
+  }
+  public bool TakeDamage(int damage, string type) {
+    // successful vampire attack
+    if (damage > 0 && type == "v")
+      hp_max -= 2;
+    else if (damage > 0 && type == "s") {
+      // successful snake attack
+      Random rnd = new Random();
+      if (rnd.Next(1, 4) == 1)
+        _asleep = true;
+    }
+    hp -= damage;
+    if (hp < 0) hp = 0;
+    if (hp == 0) return true;
+    else return false;
   }
 }
 
