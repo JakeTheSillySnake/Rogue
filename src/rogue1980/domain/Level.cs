@@ -2,7 +2,19 @@ namespace Domain.Level;
 
 using Domain.Enemies;
 
-enum CellStates { EMPTY = 0, WALL, ZOMBIE, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC, SCROLL, POTION, FOOD }
+enum CellStates {
+  EMPTY = 0,
+  WALL,
+  ZOMBIE,
+  VAMPIRE,
+  OGRE,
+  GHOST,
+  SNAKE,
+  MIMIC,
+  SCROLL,
+  POTION,
+  FOOD
+}
 
 public class Level {
   public const int ROWS = 20, COLS = 70;

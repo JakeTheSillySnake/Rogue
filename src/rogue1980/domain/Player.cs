@@ -172,4 +172,8 @@ public class Player : Entity {
     res[0] = lvl.field[targetY, targetX];
     return res;
   }
+
+  public void AddTreasure(int num) {
+    backpack.treasure += num;
+  }
 }

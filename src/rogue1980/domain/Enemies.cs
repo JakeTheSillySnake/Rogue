@@ -56,8 +56,8 @@ public abstract class Enemy : Entity {
   public virtual bool ProcessDamage(int damage) {
     hp -= damage;
     if (hp <= 0) {
-        symbol = "";
-        dead = true;
+      symbol = "";
+      dead = true;
     }
     return dead;
   }
@@ -126,13 +126,13 @@ public class Vampire : Enemy {
 
   public override bool ProcessDamage(int damage) {
     if (_firstMove) {
-        _firstMove = false;
-        return dead;
+      _firstMove = false;
+      return dead;
     }
     hp -= damage;
     if (hp <= 0) {
-        symbol = "";
-        dead = true;
+      symbol = "";
+      dead = true;
     }
     return dead;
   }
