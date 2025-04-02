@@ -5,7 +5,8 @@ using rogue1980.domain;
 
 public class Level {
   public const int ROWS = 20, COLS = 70;
-  public int[,] field = LevelFactory.createLevelMap(ROWS, COLS);
+  ILevelFactory levelFactory;
+  public int[,] field;
 
   // stores all enemies on level
   public List<Zombie> zombies = [];
@@ -16,6 +17,10 @@ public class Level {
   public List<Mimic> mimics = [];
 
   public Level() {
+    levelFactory = new LevelFactory();
+    field = levelFactory.createLevelMap(ROWS, COLS);
+
+
     for (int i = 0; i < ROWS; i++) {
       for (int j = 0; j < COLS; j++) {
         field[i, j] = (int)CellStates.EMPTY;
