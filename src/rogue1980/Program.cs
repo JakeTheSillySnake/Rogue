@@ -12,17 +12,24 @@ class Program {
     Game game = new Game();
 
     while (c != 'Q' && c != 'q' && c != CursesKey.ESC && !game.isOver) {
+      NCurses.Erase();
+      if (c == 'i' || c == 'I') {
+        game.ListInventory();
+        NCurses.Refresh();
+        c = NCurses.GetChar();
+        continue;
+      }
+
       // handle damage to enemy
       List<int> attackResult = game.player.Move(c, game.lvl);
-      bool dead = game.lvl.ProcessDamage(attackResult);
+      var kill = game.lvl.ProcessDamage(attackResult);
+      if (kill.Item1) game.player.backpack.AddTreasure(kill.Item2);
 
-      string killer = game.UpdateGame();
-
-      NCurses.Erase();
+      var killer = game.UpdateGame();
       game.DrawField();
       game.DrawPlayer();
       game.DrawEnemies();
-      game.DrawMessages(attackResult, dead);
+      game.DrawMessages(attackResult, kill.Item1, kill.Item2);
 
       if (game.isOver) {
         game.GameEndMessage(killer);

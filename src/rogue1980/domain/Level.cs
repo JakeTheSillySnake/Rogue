@@ -2,7 +2,7 @@ namespace Domain.Level;
 
 using Domain.Enemies;
 
-enum CellStates { EMPTY = 0, WALL, ZOMBIE, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
+enum CellStates { EMPTY = 0, WALL, ZOMBIE, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC, SCROLL, POTION, FOOD }
 
 public class Level {
   public const int ROWS = 20, COLS = 70;
@@ -117,30 +117,37 @@ public class Level {
     }
   }
 
-  public bool ProcessDamage(List<int> res) {
+  public (bool, int) ProcessDamage(List<int> res) {
     int typeCode = res[0] / 1000, idx = res[0] - (typeCode * 1000);
+    int treasure = 0;
     bool dead = false;
     switch (typeCode) {
       case (int)CellStates.ZOMBIE:
         dead = zombies[idx].ProcessDamage(res[1]);
+        treasure = zombies[idx].GenTreasure();
         break;
       case (int)CellStates.VAMPIRE:
         dead = vampires[idx].ProcessDamage(res[1]);
+        treasure = vampires[idx].GenTreasure();
         break;
       case (int)CellStates.OGRE:
         dead = ogres[idx].ProcessDamage(res[1]);
+        treasure = ogres[idx].GenTreasure();
         break;
       case (int)CellStates.GHOST:
         dead = ghosts[idx].ProcessDamage(res[1]);
+        treasure = ghosts[idx].GenTreasure();
         break;
       case (int)CellStates.SNAKE:
         dead = snakes[idx].ProcessDamage(res[1]);
+        treasure = snakes[idx].GenTreasure();
         break;
       case (int)CellStates.MIMIC:
         dead = mimics[idx].ProcessDamage(res[1]);
+        treasure = mimics[idx].GenTreasure();
         break;
     }
-    return dead;
+    return (dead, treasure);
   }
   // level generation somewhere here
 }

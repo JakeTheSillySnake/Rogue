@@ -2,6 +2,7 @@ namespace Domain.Player;
 
 using System.Collections.Generic;
 using Domain.Level;
+using Domain.Inventory;
 
 enum Colors {
   BLUE = 1,
@@ -64,6 +65,7 @@ public class Entity {
 public class Player : Entity {
   public int lvl = 1;
   public bool asleep = false;
+  public Inventory backpack = new Inventory();
 
   public Player(int x, int y) {
     symbol = "p";
@@ -108,7 +110,7 @@ public class Player : Entity {
     return res;
   }
 
-  public bool ProcessDamage(int damage, string type) {
+  public (bool, int) ProcessDamage(int damage, string type) {
     // successful vampire attack
     if (damage > 0 && type == "v")
       hp_max -= 2;
@@ -122,9 +124,9 @@ public class Player : Entity {
     if (hp < 0)
       hp = 0;
     if (hp == 0)
-      return true;
+      return (true, damage);
     else
-      return false;
+      return (false, damage);
   }
 
   public List<int> Attack(Level lvl, int targetX, int targetY) {
@@ -171,15 +173,3 @@ public class Player : Entity {
     return res;
   }
 }
-
-/*public class Backpack {
-    public var potions = new Dictionary<String, Int>(9);
-    public var scrolls = new Dictionary<String, Int>(9);
-    public var food = new Dictionary<String, Int>(9);
-    public int treasure = 0;
-    public Backpack() {}
-
-    public void ListInventory();
-    public void AddItem();
-    public void DeletItem();
-}*/

@@ -7,16 +7,18 @@ using Domain.Enemies;
 using Domain.Level;
 
 class Game {
-  public const int X_BORDER = 5, Y_BORDER = 1;
+  public const int X_BORDER = 5, Y_BORDER = 1, MSG_START = 3;
   public bool isOver = false;
   public Level lvl = new Level();
   public Player player = new Player(34, 14);
+  public Queue<string> messages = new Queue<string>();
 
   public Game() {
-    // generate enemies
+    // generate some enemies
     lvl.SpawnEnemy("z", 12, 5);
     lvl.SpawnEnemy("s", 6, 10);
-    lvl.SpawnEnemy("g", 57, 14);
+    lvl.SpawnEnemy("m", 57, 14);
+    lvl.SpawnEnemy("v", 30, 12);
 
     NCurses.StartColor();
     NCurses.InitPair((int)Colors.BLUE, CursesColor.BLUE, CursesColor.BLACK);
@@ -27,41 +29,69 @@ class Game {
   }
 
   public string UpdateGame() {
+    messages.Clear();
     // damage from enemies
     foreach (var z in lvl.zombies) {
-      isOver = player.ProcessDamage(z.Act(lvl, player), z.symbol);
+      var attack = player.ProcessDamage(z.Act(lvl, player), z.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Zombie! (-{0} HP)", attack.Item2));
       if (isOver) return "Zombie";
     }
     foreach (var v in lvl.vampires) {
-      isOver = player.ProcessDamage(v.Act(lvl, player), v.symbol);
+      var attack = player.ProcessDamage(v.Act(lvl, player), v.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Vampire! (-{0} HP)", attack.Item2));
       if (isOver) return "Vampire";
     }
     foreach (var o in lvl.ogres) {
-      isOver = player.ProcessDamage(o.Act(lvl, player), o.symbol);
+      var attack = player.ProcessDamage(o.Act(lvl, player), o.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Ogre! (-{0} HP)", attack.Item2));
       if (isOver) return "Ogre";
     }
     foreach (var g in lvl.ghosts) {
-      isOver = player.ProcessDamage(g.Act(lvl, player), g.symbol);
+      var attack = player.ProcessDamage(g.Act(lvl, player), g.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Ghost! (-{0} HP)", attack.Item2));
       if (isOver) return "Ghost";
     }
     foreach (var s in lvl.snakes) {
-      isOver = player.ProcessDamage(s.Act(lvl, player), s.symbol);
+      var attack = player.ProcessDamage(s.Act(lvl, player), s.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Snake-Wizard! (-{0} HP)", attack.Item2));
       if (isOver) return "Snake-Wizard";
     }
     foreach (var m in lvl.mimics) {
-      isOver = player.ProcessDamage(m.Act(lvl, player), m.symbol);
+      var attack = player.ProcessDamage(m.Act(lvl, player), m.symbol);
+      isOver = attack.Item1;
       lvl.UpdateField();
+      if (attack.Item2 > 0)
+        messages.Enqueue(string.Format("You were hit by Mimic! (-{0} HP)", attack.Item2));
       if (isOver) return "Mimic";
     }
     return "";
   }
 
-  public void DrawMessages(List<int> attackResult, bool dead) {
+  public void ListInventory() {
+    NCurses.AttributeSet(NCurses.ColorPair(4) | CursesAttribute.NORMAL);
+    DrawField();
+    DrawPlayer();
+    DrawEnemies();
+    NCurses.MoveAddString(Level.ROWS + MSG_START, X_BORDER + 1,
+                            String.Format("Treasure: {0} Coins", player.backpack.treasure));
+  }
+
+  public void DrawMessages(List<int> attackResult, bool dead, int treasure) {
     NCurses.AttributeSet(NCurses.ColorPair(2) | CursesAttribute.NORMAL);
     int enemyType = attackResult[0] / 1000;
     string enemy = "";
@@ -86,17 +116,17 @@ class Game {
         break;
     }
     if (enemy != "" && attackResult[1] != 0) {
-      NCurses.MoveAddString(Level.ROWS + 3, X_BORDER + 1,
-                            String.Format("You dealt {0} damage to {1}", attackResult[1], enemy));
+      messages.Enqueue(string.Format("You dealt {0} damage to {1}!", attackResult[1], enemy));
       if (dead)
-        NCurses.MoveAddString(Level.ROWS + 4, X_BORDER + 1,
-                              String.Format("You defeated {0}", enemy));
-    } else if (enemy != "") {
-      NCurses.MoveAddString(Level.ROWS + 3, X_BORDER + 1,
-                            String.Format("You tried to hit {0} but missed", enemy));
-    } 
-    if (player.asleep) {
-      NCurses.MoveAddString(Level.ROWS + 4, X_BORDER + 1, "You were stunned by Snake-Wizard");
+        messages.Enqueue(string.Format("You defeated {0}! (+{1} Coins)", enemy, treasure));
+    } else if (enemy != "")
+      messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
+    if (player.asleep)
+      messages.Enqueue("You were stunned by Snake-Wizard!");
+    int count = 0;
+    foreach (string msg in messages) {
+      NCurses.MoveAddString(Level.ROWS + MSG_START + count, X_BORDER + 1, msg);
+      count++;
     }
   }
 
@@ -161,7 +191,7 @@ class Game {
 
   public void GameEndMessage(string killer) {
     NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
-    NCurses.MoveAddString(Level.ROWS + 5, X_BORDER + 1,
-                            String.Format("You were defeated by {0}!", killer));
+    string msg = string.Format("You were defeated by {0}!", killer);
+    NCurses.MoveAddString(Level.ROWS + MSG_START + messages.Count(), X_BORDER + 1, msg);
   }
 }

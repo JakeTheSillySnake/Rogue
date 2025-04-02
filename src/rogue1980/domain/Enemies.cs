@@ -61,6 +61,11 @@ public abstract class Enemy : Entity {
     }
     return dead;
   }
+
+  public int GenTreasure() {
+    Random rnd = new Random();
+    return rnd.Next(hp_max, str + agl + enmity + hp_max);
+  }
 }
 
 public class Zombie : Enemy {
