@@ -5,6 +5,7 @@ using Mindmagma.Curses;
 using Domain.Player;
 using Domain.Enemies;
 using Domain.Level;
+using rogue1980.domain;
 
 class Game {
   public const int X_BORDER = 5, Y_BORDER = 1;

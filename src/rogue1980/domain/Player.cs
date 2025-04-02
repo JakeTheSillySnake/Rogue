@@ -2,6 +2,7 @@ namespace Domain.Player;
 
 using System.Collections.Generic;
 using Domain.Level;
+using rogue1980.domain;
 
 enum Colors {
   BLUE = 1,

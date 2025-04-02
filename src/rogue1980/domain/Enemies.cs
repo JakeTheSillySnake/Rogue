@@ -2,6 +2,7 @@ namespace Domain.Enemies;
 
 using Domain.Player;
 using Domain.Level;
+using rogue1980.domain;
 
 public abstract class Enemy : Entity {
   public int enmity;

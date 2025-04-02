@@ -1,12 +1,11 @@
 namespace Domain.Level;
 
 using Domain.Enemies;
-
-enum CellStates { EMPTY = 0, WALL, ZOMBIE, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
+using rogue1980.domain;
 
 public class Level {
   public const int ROWS = 20, COLS = 70;
-  public int[,] field = new int[ROWS, COLS];
+  public int[,] field = LevelFactory.createLevelMap(ROWS, COLS);
 
   // stores all enemies on level
   public List<Zombie> zombies = [];
