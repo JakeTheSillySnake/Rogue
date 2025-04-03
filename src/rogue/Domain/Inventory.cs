@@ -1,4 +1,4 @@
-namespace Domain.Inventory;
+namespace rogue.Domain;
 
 using System.Collections.Generic;
 

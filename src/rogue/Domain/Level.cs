@@ -1,6 +1,4 @@
-namespace Domain.Level;
-
-using Domain.Enemies;
+namespace rogue.Domain;
 
 enum CellStates {
   EMPTY = 0,

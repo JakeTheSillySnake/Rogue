@@ -1,7 +1,4 @@
-namespace Domain.Enemies;
-
-using Domain.Player;
-using Domain.Level;
+namespace rogue.Domain;
 
 public abstract class Enemy : Entity {
   public int enmity;
