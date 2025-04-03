@@ -1,30 +1,14 @@
 namespace rogue.Domain;
 
-enum CellStates {
-  EMPTY = 0,
-  WALL,
-  ZOMBIE,
-  VAMPIRE,
-  OGRE,
-  GHOST,
-  SNAKE,
-  MIMIC,
-  SCROLL,
-  POTION,
-  FOOD
-}
+enum CellStates { EMPTY = 0, WALL }
 
 public class Level {
   public const int ROWS = 20, COLS = 70;
   public int[,] field = new int[ROWS, COLS];
+  public static int enemyCode = 100, itemCode = 1000;
 
-  // stores all enemies on level
-  public List<Zombie> zombies = [];
-  public List<Vampire> vampires = [];
-  public List<Ogre> ogres = [];
-  public List<Ghost> ghosts = [];
-  public List<Snake> snakes = [];
-  public List<Mimic> mimics = [];
+  public List<Enemy> enemies = [];
+  public List<Item> items = [];
 
   public Level() {
     for (int i = 0; i < ROWS; i++) {
@@ -48,50 +32,41 @@ public class Level {
   }
 
   public void ClearLevel() {
-    zombies.Clear();
-    vampires.Clear();
-    ogres.Clear();
-    ghosts.Clear();
-    snakes.Clear();
-    mimics.Clear();
+    enemies.Clear();
+    items.Clear();
   }
 
-  public void SpawnEnemy(string type, int x, int y) {
-    int idx = 0, typeCode = 0;
-    switch (type) {
-      case "z":
-        zombies.Add(new Zombie(x, y));
-        typeCode = (int)CellStates.ZOMBIE;
-        idx = zombies.Count() - 1;
-        break;
-      case "v":
-        vampires.Add(new Vampire(x, y));
-        typeCode = (int)CellStates.VAMPIRE;
-        idx = vampires.Count() - 1;
-        break;
-      case "o":
-        ogres.Add(new Ogre(x, y));
-        typeCode = (int)CellStates.OGRE;
-        idx = ogres.Count() - 1;
-        break;
-      case "g":
-        ghosts.Add(new Ghost(x, y));
-        typeCode = (int)CellStates.GHOST;
-        idx = ghosts.Count() - 1;
-        break;
-      case "s":
-        snakes.Add(new Snake(x, y));
-        typeCode = (int)CellStates.SNAKE;
-        idx = snakes.Count() - 1;
-        break;
-      case "m":
-        mimics.Add(new Mimic(x, y));
-        typeCode = (int)CellStates.MIMIC;
-        idx = mimics.Count() - 1;
-        break;
-    }
-    // saving enemy type & index
-    field[y, x] = typeCode * 1000 + idx;
+  public void SpawnEnemy(int type, int x, int y) {
+    if (type == (int)Enemies.ZOMBIE)
+      enemies.Add(new Zombie(x, y));
+    else if (type == (int)Enemies.VAMPIRE)
+      enemies.Add(new Vampire(x, y));
+    else if (type == (int)Enemies.OGRE)
+      enemies.Add(new Ogre(x, y));
+    else if (type == (int)Enemies.GHOST)
+      enemies.Add(new Ghost(x, y));
+    else if (type == (int)Enemies.SNAKE)
+      enemies.Add(new Snake(x, y));
+    else if (type == (int)Enemies.MIMIC)
+      enemies.Add(new Mimic(x, y));
+    int idx = enemies.Count - 1;
+    field[y, x] = enemyCode + idx;
+  }
+
+  public void SpawnItem(int type, int x, int y) {
+    if (type == (int)Items.WEAPON)
+      items.Add(new Weapon());
+    else if (type == (int)Items.POTION)
+      items.Add(new Potion());
+    else if (type == (int)Items.SCROLL)
+      items.Add(new Scroll());
+    else if (type == (int)Items.FOOD)
+      items.Add(new Food());
+    else if (type == (int)Items.TREASURE)
+      items.Add(new Treasure());
+    int idx = items.Count - 1;
+    items[idx].Spawn(x, y);
+    field[y, x] = itemCode + idx;
   }
 
   public void UpdateField() {
@@ -101,63 +76,27 @@ public class Level {
           field[i, j] = (int)CellStates.EMPTY;
       }
     }
-    for (int i = 0; i < zombies.Count(); i++) {
-      if (!zombies[i].dead)
-        field[zombies[i].y, zombies[i].x] = (int)CellStates.ZOMBIE * 1000 + i;
+    for (int i = 0; i < enemies.Count; i++) {
+      if (!enemies[i].dead)
+        field[enemies[i].y, enemies[i].x] = enemyCode + i;
     }
-    for (int i = 0; i < vampires.Count(); i++) {
-      if (!vampires[i].dead)
-        field[vampires[i].y, vampires[i].x] = (int)CellStates.VAMPIRE * 1000 + i;
-    }
-    for (int i = 0; i < ogres.Count(); i++) {
-      if (!ogres[i].dead)
-        field[ogres[i].y, ogres[i].x] = (int)CellStates.OGRE * 1000 + i;
-    }
-    for (int i = 0; i < ghosts.Count(); i++) {
-      if (!ghosts[i].dead)
-        field[ghosts[i].y, ghosts[i].x] = (int)CellStates.GHOST * 1000 + i;
-    }
-    for (int i = 0; i < snakes.Count(); i++) {
-      if (!snakes[i].dead)
-        field[snakes[i].y, snakes[i].x] = (int)CellStates.SNAKE * 1000 + i;
-    }
-    for (int i = 0; i < mimics.Count(); i++) {
-      if (!mimics[i].dead)
-        field[mimics[i].y, mimics[i].x] = (int)CellStates.MIMIC * 1000 + i;
+    for (int i = 0; i < items.Count; i++) {
+      if (items[i].active)
+        field[items[i].y, items[i].x] = itemCode + i;
     }
   }
 
-  public (bool, int) ProcessDamage(List<int> res) {
-    int typeCode = res[0] / 1000, idx = res[0] - (typeCode * 1000);
-    int treasure = 0;
-    bool dead = false;
-    switch (typeCode) {
-      case (int)CellStates.ZOMBIE:
-        dead = zombies[idx].ProcessDamage(res[1]);
-        treasure = zombies[idx].GenTreasure();
-        break;
-      case (int)CellStates.VAMPIRE:
-        dead = vampires[idx].ProcessDamage(res[1]);
-        treasure = vampires[idx].GenTreasure();
-        break;
-      case (int)CellStates.OGRE:
-        dead = ogres[idx].ProcessDamage(res[1]);
-        treasure = ogres[idx].GenTreasure();
-        break;
-      case (int)CellStates.GHOST:
-        dead = ghosts[idx].ProcessDamage(res[1]);
-        treasure = ghosts[idx].GenTreasure();
-        break;
-      case (int)CellStates.SNAKE:
-        dead = snakes[idx].ProcessDamage(res[1]);
-        treasure = snakes[idx].GenTreasure();
-        break;
-      case (int)CellStates.MIMIC:
-        dead = mimics[idx].ProcessDamage(res[1]);
-        treasure = mimics[idx].GenTreasure();
-        break;
+  public bool ProcessDamage(List<int> res) {
+    if (res[1] == 0)
+      return false;
+    int pos = res[0] - enemyCode;
+    bool dead = enemies[pos].ProcessDamage(res[1]);
+    int treasure = enemies[pos].GenTreasure();
+    if (dead) {
+      SpawnItem((int)Items.TREASURE, enemies[pos].x, enemies[pos].y);
+      items[^1].value = treasure;
     }
-    return (dead, treasure);
+    return dead;
   }
   // level generation somewhere here
 }

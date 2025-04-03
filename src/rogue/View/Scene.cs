@@ -20,14 +20,28 @@ class Scene {
 
   public void DrawScene() {
     DrawField();
-    DrawPlayer();
     DrawEnemies();
+    DrawItems();
+    DrawPlayer();
   }
 
-  public void UploadGame(Game game) {
+  public void ProcessKeys(int action, Game game) {
     player = game.player;
     lvl = game.lvl;
     messages = game.messages;
+    NCurses.Erase();
+    if (action == 'i' || action == 'I') {
+      DrawScene();
+      ListInventory();
+    } else {
+      var killer = game.UpdateGame(action);
+      DrawScene();
+      DrawMessages();
+      if (game.isOver) {
+        GameEndMessage(killer);
+      }
+    }
+    NCurses.Refresh();
   }
 
   public void DrawMessages() {
@@ -61,7 +75,7 @@ class Scene {
     // status bar
     NCurses.MoveAddString(
         Level.ROWS + 1, X_BORDER + 1,
-        String.Format("Level: {0}(21), Health: {1}({2}), Strength: {3}, Agility: {4}", player.lvl,
+        string.Format("Level: {0}(21), Health: {1}({2}), Strength: {3}, Agility: {4}", player.lvl,
                       player.hp, player.hp_max, player.str, player.agl));
   }
 
@@ -72,41 +86,39 @@ class Scene {
 
   public void DrawEnemies() {
     NCurses.AttributeSet(CursesAttribute.BOLD);
-    foreach (var z in lvl.zombies) {
-      NCurses.AttributeSet(NCurses.ColorPair(z.color));
-      NCurses.MoveAddString(z.y + Y_BORDER, z.x + X_BORDER, z.symbol);
+    foreach (var e in lvl.enemies) {
+      NCurses.AttributeSet(NCurses.ColorPair(e.color));
+      NCurses.MoveAddString(e.y + Y_BORDER, e.x + X_BORDER, e.symbol);
     }
-    foreach (var v in lvl.vampires) {
-      NCurses.AttributeSet(NCurses.ColorPair(v.color));
-      NCurses.MoveAddString(v.y + Y_BORDER, v.x + X_BORDER, v.symbol);
-    }
-    foreach (var o in lvl.ogres) {
-      NCurses.AttributeSet(NCurses.ColorPair(o.color));
-      NCurses.MoveAddString(o.y + Y_BORDER, o.x + X_BORDER, o.symbol);
-    }
-    foreach (var g in lvl.ghosts) {
-      NCurses.AttributeSet(NCurses.ColorPair(g.color));
-      NCurses.MoveAddString(g.y + Y_BORDER, g.x + X_BORDER, g.symbol);
-    }
-    foreach (var s in lvl.snakes) {
-      NCurses.AttributeSet(NCurses.ColorPair(s.color));
-      NCurses.MoveAddString(s.y + Y_BORDER, s.x + X_BORDER, s.symbol);
-    }
-    foreach (var m in lvl.mimics) {
-      NCurses.AttributeSet(NCurses.ColorPair(m.color));
-      NCurses.MoveAddString(m.y + Y_BORDER, m.x + X_BORDER, m.symbol);
+  }
+
+  public void DrawItems() {
+    NCurses.AttributeSet(NCurses.ColorPair(2));
+    foreach (var i in lvl.items) {
+      if (i is Treasure)
+        NCurses.AttributeSet(NCurses.ColorPair(4));
+      NCurses.MoveAddString(i.y + Y_BORDER, i.x + X_BORDER, i.symbol);
     }
   }
 
   public void ListInventory() {
-    NCurses.AttributeSet(NCurses.ColorPair(4) | CursesAttribute.NORMAL);
-    NCurses.MoveAddString(Level.ROWS + MSG_START, X_BORDER + 1,
-                          string.Format("Treasure: {0} Coins", player.backpack.treasure));
+    NCurses.AttributeSet(NCurses.ColorPair(2) | CursesAttribute.NORMAL);
+    Queue<string> items = new();
+    items.Enqueue(string.Format("Treasure: {0} Coins", player.GetTreasure()));
+    items.Enqueue(string.Format("Potions: {0}", player.backpack.potions.Count));
+    items.Enqueue(string.Format("Scrolls: {0}", player.backpack.scrolls.Count));
+    items.Enqueue(string.Format("Food: {0}", player.backpack.food.Count));
+    items.Enqueue(string.Format("Weapons: {0}", player.backpack.weapons.Count));
+    int cnt = 0;
+    foreach (var i in items) {
+      NCurses.MoveAddString(Level.ROWS + MSG_START + cnt, X_BORDER + 1, i);
+      cnt++;
+    }
   }
 
   public void GameEndMessage(string killer) {
     NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
     string msg = string.Format("You were defeated by {0}!", killer);
-    NCurses.MoveAddString(Level.ROWS + MSG_START + messages.Count(), X_BORDER + 1, msg);
+    NCurses.MoveAddString(Level.ROWS + MSG_START + messages.Count, X_BORDER + 1, msg);
   }
 }
