@@ -40,19 +40,20 @@ class Program {
 }
 
 /*
-int[,] map = LevelFactory.createLevelMap(5 * 9, 70);
+ILevelFactory levelFactory = new LevelFactory();
+int[,] map = levelFactory.createLevelMap(5 * 9, 70);
 
 for (int y = 0; y < map.GetLength(0); y++)
 {
     for (int x = 0; x < map.GetLength(1); x++)
     {
-        if (map[y, x] != 0)
+        if (map[y, x] != (int)CellStates.EMPTY)
         {
             Console.Write(map[y, x]);
         }
         else
         {
-            Console.Write('map[y, x]');
+        Console.Write(" ");
         }
     }
     Console.Write('\n');

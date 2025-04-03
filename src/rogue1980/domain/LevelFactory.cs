@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 
 namespace rogue1980.domain
@@ -16,7 +16,7 @@ namespace rogue1980.domain
             List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
             List<(Route, int)> routes = GenerateCorridors(map, random, doorMST);
 
-            AssembleMap(map, rooms, routes, doorMST, keyPositions);
+            AssembleMap(map, random, rooms, routes, doorMST, keyPositions);
 
             return map;
         }
@@ -143,31 +143,93 @@ namespace rogue1980.domain
         private List<int> GenerateDOOM(int[,] map, Random random, List<Room> rooms, List<(Room, Room, int)> roomMST)
         {
             List<int> keyPositions = [];
-            bool correctlyGenerated = false;
+            GenerateDoorsDOOM(random, roomMST);
 
-            //while (!correctlyGenerated)
-            //{
-                keyPositions.Clear();
-                while (keyPositions.Count < 3)
-                {
-                    int item = random.Next(0, roomMST.Count - 1);
+            List<(int, int, int)> roomIndexMST = new();
+            foreach (var route in roomMST)
+            {
+                roomIndexMST.Add((rooms.IndexOf(route.Item1), rooms.IndexOf(route.Item2), route.Item3));
+            }
 
-                    if (!keyPositions.Contains(item))
-                    {
-                        Room roomA = roomMST[item].Item1;
-                        Room roomB = roomMST[item].Item2;
-                        roomMST.Remove(roomMST[item]);
-                        roomMST.Insert(item, (roomA, roomB, keyPositions.Count + 1));
+            GenerateKeysDOOM(random, keyPositions, roomIndexMST);
 
-                        keyPositions.Add(item);
-                    }
-                }
-            //}
             return keyPositions;
         }
 
-        private void AssembleMap(int[,] map, List<Room> rooms, List<(Route, int)> routes, List<(Door, Door, int)> doorMST, List<int> keyPositions)
+        private void GenerateDoorsDOOM(Random random, List<(Room, Room, int)> roomMST)
         {
+            List<int> doorPositions = [];
+            while (doorPositions.Count < 3)
+            {
+                int item = random.Next(doorPositions.Count > 0 ? doorPositions.Last() : 0, roomMST.Count - 2 + doorPositions.Count);
+                if (!doorPositions.Contains(item))
+                {
+                    Room roomA = roomMST[item].Item1;
+                    Room roomB = roomMST[item].Item2;
+                    roomMST.Remove(roomMST[item]);
+                    roomMST.Insert(item, (roomA, roomB, doorPositions.Count + 1));
+                    doorPositions.Add(item);
+                }
+            }
+        }
+
+        private void GenerateKeysDOOM(Random random, List<int> keyPositions, List<(int, int, int)> roomIndexMST)
+        {
+            for (int i = 1; i < 4; i++)
+            {
+                List<int> visitedIndexRooms = new List<int>() { };
+                List<int> avaivableIndexRooms = new List<int>() { 0 };
+
+                while (avaivableIndexRooms.Count > 0)
+                {
+                    visitedIndexRooms.Add(avaivableIndexRooms.First());
+                    foreach (var item in roomIndexMST)
+                    {
+                        if (item.Item1 == avaivableIndexRooms.First() && !visitedIndexRooms.Contains(item.Item2) && item.Item3 < i)
+                        {
+                            avaivableIndexRooms.Add(item.Item2);
+                        }
+                        else if (item.Item2 == avaivableIndexRooms.First() && !visitedIndexRooms.Contains(item.Item1) && item.Item3 < i)
+                        {
+                            avaivableIndexRooms.Add(item.Item1);
+                        }
+                    }
+                    avaivableIndexRooms.Remove(avaivableIndexRooms.First());
+                }
+
+                int roomToChoose = visitedIndexRooms[random.Next(visitedIndexRooms.Count / 2, visitedIndexRooms.Count)];
+                while (keyPositions.Contains(roomToChoose) && visitedIndexRooms.Count > 1)
+                {
+                    visitedIndexRooms.Remove(roomToChoose);
+                    roomToChoose = visitedIndexRooms[random.Next(visitedIndexRooms.Count / 2, visitedIndexRooms.Count)];
+                }
+                keyPositions.Add(roomToChoose);
+            }
+        }
+
+        private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<(Route, int)> routes, List<(Door, Door, int)> doorMST, List<int> keyPositions)
+        {
+            PlaceRoomsOnMap(map, rooms);
+
+            PlaceCorridorsOnMap(map, random, routes);
+
+            PlaceDoorsOnMap(map, doorMST);
+
+            int key = 0;
+            foreach (int keyPosition in keyPositions)
+            {
+                int keyPosY = random.Next(rooms[keyPosition].startPosY + 1, rooms[keyPosition].endPosY - 1);
+                int keyPosX = random.Next(rooms[keyPosition].startPosX + 1, rooms[keyPosition].endPosX - 1);
+                if (map[keyPosY, keyPosX] == (int)CellStates.EMPTY)
+                {
+                    key++;
+                    map[keyPosY, keyPosX] = key + 5;
+
+                }
+            }
+        }
+
+        private void PlaceRoomsOnMap(int[,] map, List<Room> rooms) {
             foreach (Room room in rooms)
             {
                 for (int y = room.startPosY; y <= room.endPosY; y++)
@@ -181,7 +243,10 @@ namespace rogue1980.domain
                     map[room.endPosY, x] = (int)CellStates.WALL;
                 }
             }
+        }
 
+        private void PlaceCorridorsOnMap(int[,] map, Random random, List<(Route, int)> routes)
+        {
             foreach ((Route, int) route in routes)
             {
                 foreach ((int posY, int posX) in route.Item1.tiles)
@@ -190,15 +255,20 @@ namespace rogue1980.domain
                 }
                 if (route.Item2 != 0)
                 {
-                    int doorPosY = route.Item1.tiles[0].posY;
-                    int doorPosX = route.Item1.tiles[0].posX;
+                    int tileIndexToPick = random.Next(route.Item1.tiles.Count);
+                    int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
+                    int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
                     map[doorPosY, doorPosX] = 5 + route.Item2;
                 }
             }
+        }
 
+        private void PlaceDoorsOnMap(int[,] map, List<(Door, Door, int)> doorMST)
+        {
             foreach ((Door, Door, int) doorPair in doorMST)
             {
-                for (int y = -1; y < 2; y++) {
+                for (int y = -1; y < 2; y++)
+                {
                     for (int x = -1; x < 2; x++)
                     {
                         if (map[y + doorPair.Item1.posY, x + doorPair.Item1.posX] == (int)CellStates.WALL && Math.Abs(y + x) % 2 == 1)
@@ -212,14 +282,22 @@ namespace rogue1980.domain
                     }
                 }
             }
+        }
 
+        private void PlaceKeysOnMap(int[,] map, List<Room> rooms, Random random, List<int> keyPositions)
+        {
             int key = 0;
             foreach (int keyPosition in keyPositions)
             {
-                key++;
-                map[rooms[keyPosition].centerPosY, rooms[keyPosition].centerPosX] = key + 5;
-            }
+                int keyPosY = random.Next(rooms[keyPosition].startPosY + 1, rooms[keyPosition].endPosY - 1);
+                int keyPosX = random.Next(rooms[keyPosition].startPosX + 1, rooms[keyPosition].endPosX - 1);
+                if (map[keyPosY, keyPosX] == (int)CellStates.EMPTY)
+                {
+                    key++;
+                    map[keyPosY, keyPosX] = key + 5;
 
+                }
+            }
         }
 
         public static double GetDistanceBetweenRooms(Room roomA, Room roomB)
