@@ -9,11 +9,5 @@
         KEY_RED,
         KEY_GREEN,
         KEY_BLUE,
-        ZOMBIE, 
-        VAMPIRE, 
-        OGRE, 
-        GHOST, 
-        SNAKE, 
-        MIMIC
     }
 }

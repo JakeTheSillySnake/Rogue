@@ -1,8 +1,6 @@
-namespace Domain.Enemies;
+namespace rogue.Domain;
 
-using Domain.Player;
-using Domain.Level;
-using rogue1980.domain;
+enum Enemies { ZOMBIE = 0, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
 
 public abstract class Enemy : Entity {
   public int enmity;
@@ -14,7 +12,7 @@ public abstract class Enemy : Entity {
 
   public virtual int Attack(Player p) {
     int chance = 0;
-    Random rnd = new Random();
+    Random rnd = new();
     if (agl < p.agl)
       chance = 40;
     else if (agl == p.agl)
@@ -57,10 +55,15 @@ public abstract class Enemy : Entity {
   public virtual bool ProcessDamage(int damage) {
     hp -= damage;
     if (hp <= 0) {
-        symbol = "";
-        dead = true;
+      symbol = "";
+      dead = true;
     }
     return dead;
+  }
+
+  public int GenTreasure() {
+    Random rnd = new();
+    return rnd.Next(hp_max, str + agl + enmity + hp_max);
   }
 }
 
@@ -122,13 +125,13 @@ public class Vampire : Enemy {
 
   public override bool ProcessDamage(int damage) {
     if (_firstMove) {
-        _firstMove = false;
-        return dead;
+      _firstMove = false;
+      return dead;
     }
     hp -= damage;
     if (hp <= 0) {
-        symbol = "";
-        dead = true;
+      symbol = "";
+      dead = true;
     }
     return dead;
   }
@@ -165,7 +168,7 @@ public class Ogre : Enemy {
 
   public override int Attack(Player p) {
     int chance = 0;
-    Random rnd = new Random();
+    Random rnd = new();
     if (agl < p.agl)
       chance = 40;
     else if (agl == p.agl)
@@ -203,7 +206,7 @@ public class Ghost : Enemy {
 
   public override void Move(Level lvl) {
     if (_timer == 0) {
-      Random rnd = new Random();
+      Random rnd = new();
       x = rnd.Next(_minX, _maxX + 1);
       y = rnd.Next(_minY, _maxY + 1);
       _timer = 6;
@@ -246,7 +249,7 @@ public class Snake : Enemy {
       _steps--;
     } else {
       _steps = 3;
-      Random rnd = new Random();
+      Random rnd = new();
       _dirX = rnd.Next(2) == 1 ? 1 : -1;
       _dirY = rnd.Next(2) == 1 ? 1 : -1;
     }
@@ -254,8 +257,10 @@ public class Snake : Enemy {
 }
 
 public class Mimic : Enemy {
+  private readonly string[] _items = ["!", "=", "+", "d"];
   public Mimic(int x, int y) {
-    symbol = "п";  // table or smth
+    Random rnd = new();
+    symbol = _items[rnd.Next(_items.Length)];
     hp = 4 * valHigh;
     hp_max = 4 * valHigh;
     str = valLow;
@@ -270,7 +275,7 @@ public class Mimic : Enemy {
   public override int Attack(Player p) {
     symbol = "m";
     int chance = 0;
-    Random rnd = new Random();
+    Random rnd = new();
     if (agl < p.agl)
       chance = 40;
     else if (agl == p.agl)

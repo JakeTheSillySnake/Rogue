@@ -1,8 +1,6 @@
-namespace Domain.Player;
+namespace rogue.Domain;
 
 using System.Collections.Generic;
-using Domain.Level;
-using rogue1980.domain;
 
 enum Colors {
   BLUE = 1,
@@ -15,7 +13,7 @@ enum Colors {
 public class Entity {
   public int x, y, hp, hp_max, str, agl, color;
   public string symbol = "";
-  public int valLow = 3, valMid = 5, valHigh = 10;
+  public static int valLow = 3, valMid = 5, valHigh = 10;
 
   public Entity() {}
 
@@ -34,28 +32,28 @@ public class Entity {
   }
 
   public bool CheckRight(Level lvl, int dist) {
-    if (lvl.field[y, x + dist] == (int)CellStates.EMPTY)
+    if (lvl.field[y, x + dist] == (int)CellStates.EMPTY || lvl.field[y, x + dist] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckLeft(Level lvl, int dist) {
-    if (lvl.field[y, x - dist] == (int)CellStates.EMPTY)
+    if (lvl.field[y, x - dist] == (int)CellStates.EMPTY || lvl.field[y, x - dist] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckUp(Level lvl, int dist) {
-    if (lvl.field[y - dist, x] == (int)CellStates.EMPTY)
+    if (lvl.field[y - dist, x] == (int)CellStates.EMPTY || lvl.field[y - dist, x] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckDown(Level lvl, int dist) {
-    if (lvl.field[y + dist, x] == (int)CellStates.EMPTY)
+    if (lvl.field[y + dist, x] == (int)CellStates.EMPTY || lvl.field[y + dist, x] >= Level.itemCode)
       return true;
     else
       return false;
@@ -65,6 +63,8 @@ public class Entity {
 public class Player : Entity {
   public int lvl = 1;
   public bool asleep = false;
+  public Inventory backpack = new();
+  public Weapon currWeapon = new();
 
   public Player(int x, int y) {
     symbol = "p";
@@ -109,13 +109,13 @@ public class Player : Entity {
     return res;
   }
 
-  public bool ProcessDamage(int damage, string type) {
+  public (bool, int) ProcessDamage(int damage, string type) {
     // successful vampire attack
     if (damage > 0 && type == "v")
       hp_max -= 2;
     else if (damage > 0 && type == "s") {
       // successful snake attack
-      Random rnd = new Random();
+      Random rnd = new();
       if (rnd.Next(1, 4) == 1)
         asleep = true;
     }
@@ -123,40 +123,18 @@ public class Player : Entity {
     if (hp < 0)
       hp = 0;
     if (hp == 0)
-      return true;
+      return (true, damage);
     else
-      return false;
+      return (false, damage);
   }
 
   public List<int> Attack(Level lvl, int targetX, int targetY) {
     List<int> res = [0, 0];
-    int enemyAgl = 0, chance = 0;
-    int typeCode = lvl.field[targetY, targetX] / 1000,
-        idx = lvl.field[targetY, targetX] - (typeCode * 1000);
-    if (typeCode == (int)CellStates.WALL)
+    if (lvl.field[targetY, targetX] == (int)CellStates.WALL)
       return res;
-
-    switch (typeCode) {
-      case (int)CellStates.ZOMBIE:
-        enemyAgl = lvl.zombies[idx].agl;
-        break;
-      case (int)CellStates.VAMPIRE:
-        enemyAgl = lvl.vampires[idx].agl;
-        break;
-      case (int)CellStates.OGRE:
-        enemyAgl = lvl.ogres[idx].agl;
-        break;
-      case (int)CellStates.GHOST:
-        enemyAgl = lvl.ghosts[idx].agl;
-        break;
-      case (int)CellStates.SNAKE:
-        enemyAgl = lvl.snakes[idx].agl;
-        break;
-      case (int)CellStates.MIMIC:
-        enemyAgl = lvl.mimics[idx].agl;
-        break;
-    }
-    Random rnd = new Random();
+    int pos = lvl.field[targetY, targetX] - Level.enemyCode;
+    int enemyAgl = lvl.enemies[pos].agl, chance;
+    Random rnd = new();
     if (enemyAgl < agl)
       chance = 40;
     else if (enemyAgl == agl)
@@ -171,16 +149,28 @@ public class Player : Entity {
     res[0] = lvl.field[targetY, targetX];
     return res;
   }
+
+  public int CollectItem(Level lvl, int targetX, int targetY) {
+    if (lvl.field[targetY, targetX] < Level.itemCode)
+      return -1;
+    int pos = lvl.field[targetY, targetX] - Level.itemCode;
+    var i = lvl.items[pos];
+    if (!i.active)
+      return -1;
+    if (i is Treasure)
+      AddTreasure(i.value);
+    else if (!backpack.AddItem(i))
+      return -1;
+    i.active = false;
+    i.symbol = "";
+    return pos;
+  }
+
+  public void AddTreasure(int num) {
+    backpack.AddTreasure(num);
+  }
+
+  public int GetTreasure() {
+    return backpack.GetTreasure();
+  }
 }
-
-/*public class Backpack {
-    public var potions = new Dictionary<String, Int>(9);
-    public var scrolls = new Dictionary<String, Int>(9);
-    public var food = new Dictionary<String, Int>(9);
-    public int treasure = 0;
-    public Backpack() {}
-
-    public void ListInventory();
-    public void AddItem();
-    public void DeletItem();
-}*/
