@@ -4,8 +4,20 @@ using Mindmagma.Curses;
 using rogue.View;
 using rogue1980.domain;
 
-class Program {
+class Program
+{
 
+    /*
+        Генерация врагов и предметов ( задать место для общего спавна )
+        Динамическая сложность ( % от макс хп, либо значение хп в целом )
+
+        ///
+
+        JSON
+        Сбор статистики
+        Лидерборды
+        Маска "тумана войны" ( в фнукцию обновления передаём координаты персонажа, вызывае функцию каждый ход / спавн )
+    */
     static void Main()
     {
         ILevelFactory a = new LevelFactory();
