@@ -18,10 +18,10 @@ class Game {
     // lvl.SpawnEnemy((int)Enemies.VAMPIRE, 30, 12);
 
     // generate some items
-    lvl.SpawnItem((int)Items.POTION, 40, 14);
-    lvl.SpawnItem((int)Items.SCROLL, 50, 10);
-    lvl.SpawnItem((int)Items.FOOD, 6, 12);
-    lvl.SpawnItem((int)Items.WEAPON, 30, 12);
+    lvl.SpawnItem((int)Items.WEAPON, 40, 14);
+    lvl.SpawnItem((int)Items.POTION, 50, 10);
+    lvl.SpawnItem((int)Items.POTION, 6, 12);
+    lvl.SpawnItem((int)Items.POTION, 30, 12);
     lvl.SpawnItem((int)Items.WEAPON, 20, 10);
   }
 
@@ -38,6 +38,19 @@ class Game {
     return attacker;
   }
 
+  public bool UseItem(Item item) {
+    bool success = true;
+    if (item is Weapon && player.currWeapon.equipped)
+      success = lvl.DropWeapon(player);
+    if (success)
+      player.UseItem(item);
+    return success;
+  }
+
+  public void RemoveCurrWeapon() {
+    player.RemoveCurrWeapon();
+  }
+
   public void ProcessItemMessages() {
     int pos = player.CollectItem(lvl, player.x, player.y);
     if (pos < 0)
@@ -46,13 +59,9 @@ class Game {
     string item = "";
     if (i is Treasure)
       item = string.Format("{0} Coins", i.value);
-    else if (i is Potion)
-      item = string.Format("Potion of {0}", i.name);
-    else if (i is Scroll)
-      item = string.Format("Scroll of {0}", i.name);
-    else if (i is Food)
-      item = string.Format("{0}", i.name);
-    else if (i is Weapon)
+    else if (i is Potion || i is Scroll)
+      item = string.Format("{0} of {1}", i.type, i.subtype);
+    else if (i is Food || i is Weapon)
       item = string.Format("{0}", i.name);
     messages.Enqueue(string.Format("You collected {0}!", item));
   }

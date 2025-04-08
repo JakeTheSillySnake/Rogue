@@ -69,6 +69,25 @@ public class Level {
     field[y, x] = itemCode + idx;
   }
 
+  public bool DropWeapon(Player p) {
+    var w = new Weapon { name = p.currWeapon.name, value = p.currWeapon.value };
+    int x = p.x, y = p.y;
+    if (p.CheckLeft(this, 1))
+      x--;
+    else if (p.CheckRight(this, 1))
+      x++;
+    else if (p.CheckDown(this, 1))
+      y++;
+    else if (p.CheckUp(this, 1))
+      y--;
+    if (x == p.x && y == p.y)
+      return false;
+    items.Add(w);
+    w.Spawn(x, y);
+    field[y, x] = itemCode + items.Count - 1;
+    return true;
+  }
+
   public void UpdateField() {
     for (int i = 0; i < ROWS; i++) {
       for (int j = 0; j < COLS; j++) {

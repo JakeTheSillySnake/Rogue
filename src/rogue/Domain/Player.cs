@@ -63,8 +63,11 @@ public class Entity {
 public class Player : Entity {
   public int lvl = 1;
   public bool asleep = false;
+  public string effect = "";
+  public int effCount = 0;
   public Inventory backpack = new();
   public Weapon currWeapon = new();
+  public Potion currPotion = new();
 
   public Player(int x, int y) {
     symbol = "p";
@@ -77,6 +80,7 @@ public class Player : Entity {
   }
 
   public List<int> Move(int action, Level lvl) {
+    ProcessEffects();
     List<int> res = [0, 0];
     if (asleep) {
       asleep = false;
@@ -107,6 +111,21 @@ public class Player : Entity {
         res = Attack(lvl, x, y + 1);
     }
     return res;
+  }
+
+  public void ProcessEffects() {
+    if (effCount > 0)
+      effCount--;
+    else if (effect != "") {
+      if (effect == "Health") {
+        hp_max = hp_max - currPotion.value > 0 ? hp_max - currPotion.value : 1;
+        hp = hp - currPotion.value > 0 ? hp - currPotion.value : 1;
+      } else if (effect == "Strength")
+        str -= currPotion.value;
+      else if (effect == "Agility")
+        agl -= currPotion.value;
+      effect = "";
+    }
   }
 
   public (bool, int) ProcessDamage(int damage, string type) {
@@ -164,6 +183,40 @@ public class Player : Entity {
     i.active = false;
     i.symbol = "";
     return pos;
+  }
+
+  public void UseItem(Item item) {
+    if (item.subtype == "Health" && item is Food)
+      hp += item.value;
+    else if (item.subtype == "Health") {
+      hp_max += item.value;
+      hp += item.value;
+    } else if (item.subtype == "Strength")
+      str += item.value;
+    else if (item.subtype == "Agility")
+      agl += item.value;
+    if (item is Weapon) {
+      if (currWeapon.equipped)
+        str -= currWeapon.value;
+      currWeapon.equipped = true;
+      currWeapon.name = item.name;
+      currWeapon.value = item.value;
+    }
+    if (item is Potion p) {
+      effCount = 0;
+      ProcessEffects();
+      effect = p.subtype;
+      effCount = p.effectLen;
+      currPotion = p;
+    }
+    backpack.RemoveItem(item);
+  }
+
+  public void RemoveCurrWeapon() {
+    currWeapon.equipped = false;
+    var w = new Weapon { name = currWeapon.name, value = currWeapon.value };
+    backpack.AddItem(w);
+    str -= currWeapon.value;
   }
 
   public void AddTreasure(int num) {

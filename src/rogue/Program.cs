@@ -11,7 +11,7 @@ class Program {
     int c = 0;
     Game game = new();
     Scene scene = new();
-    while (c != 'Q' && c != 'q' && c != CursesKey.ESC && !game.isOver) {
+    while (c != 'Q' && c != 'q' && !game.isOver) {
       scene.ProcessKeys(c, game);
       c = NCurses.GetChar();
     }
