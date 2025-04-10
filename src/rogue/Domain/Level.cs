@@ -14,7 +14,7 @@ public class Level {
 
   public Level() {
     ILevelFactory factory = new LevelFactory();
-    field = factory.createLevelMap(ROWS, COLS);
+    field = factory.createLevelMap(ROWS, COLS, 5);
   }
 
   public void ClearLevel() {

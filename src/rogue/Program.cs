@@ -21,7 +21,7 @@ class Program
     static void Main()
     {
         ILevelFactory a = new LevelFactory();
-        int[,] map = a.createLevelMap(40, 70);
+        int[,] map = a.createLevelMap(40, 70, 10);
         for (int y = 0; y < 40; y++)
         {
             for (int x = 0; x < 70; x++)

@@ -2,6 +2,6 @@
 {
     public interface ILevelFactory
     {
-        public int[,] createLevelMap(int sizeY, int sizeX);
+        public int[,] createLevelMap(int sizeY, int sizeX, int difficulty);
     }
 }

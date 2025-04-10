@@ -5,7 +5,7 @@ namespace rogue1980.domain
 {
     public class LevelFactory : ILevelFactory
     {
-        public int[,] createLevelMap(int sizeY, int sizeX) {
+        public int[,] createLevelMap(int sizeY, int sizeX, int difficulty) {
 
             int[,] map = new int[sizeY, sizeX];
             Random random = new Random();
@@ -15,8 +15,9 @@ namespace rogue1980.domain
             List<int> keyPositions = GenerateDOOM(map, random, rooms, roomMST);
             List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
             List<(Route, int)> routes = GenerateCorridors(map, random, doorMST);
-
-            AssembleMap(map, random, rooms, routes, doorMST, keyPositions);
+            List<(int, int)> enemyPositionList = GenerateEnemySpawns(map, random, rooms, difficulty);
+            List<(int, int)> itemPositionList = GenerateItemSpawns(map, random, rooms, difficulty);
+            AssembleMap(map, random, rooms, routes, doorMST, keyPositions, enemyPositionList, itemPositionList);
 
             return map;
         }
@@ -207,7 +208,31 @@ namespace rogue1980.domain
             }
         }
 
-        private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<(Route, int)> routes, List<(Door, Door, int)> doorMST, List<int> keyPositions)
+        private List<(int, int)> GenerateEnemySpawns(int[,] map, Random random, List<Room> rooms, int difficulty)
+        {
+            List<(int, int)> enemySpawnList = new List<(int, int)>(); 
+            for (int i = 0; i < difficulty; i++) {
+                int roomToChoose = random.Next(1, rooms.Count);
+                int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
+                int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+                enemySpawnList.Add((enemyPosY, enemyPosX));
+            }
+            return enemySpawnList;
+        }
+
+        private List<(int, int)> GenerateItemSpawns(int[,] map, Random random, List<Room> rooms, int difficulty)
+        {
+            List<(int, int)> itemSpawnList = new List<(int, int)>();
+            for (int i = 10; i > difficulty; i--)
+            {
+                int roomToChoose = random.Next(1, rooms.Count);
+                int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
+                int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+                itemSpawnList.Add((enemyPosY, enemyPosX));
+            }
+            return itemSpawnList;
+        }
+        private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<(Route, int)> routes, List<(Door, Door, int)> doorMST, List<int> keyPositions, List<(int, int)> enemyPositionList, List<(int, int)> itemPositionList)
         {
             PlaceRoomsOnMap(map, rooms);
 
@@ -223,9 +248,19 @@ namespace rogue1980.domain
                 if (map[keyPosY, keyPosX] == (int)CellStates.EMPTY)
                 {
                     key++;
-                    map[keyPosY, keyPosX] = key + 5;
+                    map[keyPosY, keyPosX] = key + 3;
 
                 }
+            }
+
+            foreach(var coordinate in enemyPositionList)
+            {
+                map[coordinate.Item1, coordinate.Item2] = 7;
+            }
+
+            foreach (var coordinate in itemPositionList)
+            {
+                map[coordinate.Item1, coordinate.Item2] = 8;
             }
         }
 
@@ -258,7 +293,7 @@ namespace rogue1980.domain
                     int tileIndexToPick = random.Next(route.Item1.tiles.Count);
                     int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
                     int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
-                    map[doorPosY, doorPosX] = 5 + route.Item2;
+                    map[doorPosY, doorPosX] = 3 + route.Item2;
                 }
             }
         }
