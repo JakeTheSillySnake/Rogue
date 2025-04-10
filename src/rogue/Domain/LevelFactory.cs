@@ -240,28 +240,11 @@ namespace rogue1980.domain
 
             PlaceDoorsOnMap(map, doorMST);
 
-            int key = 0;
-            foreach (int keyPosition in keyPositions)
-            {
-                int keyPosY = random.Next(rooms[keyPosition].startPosY + 1, rooms[keyPosition].endPosY - 1);
-                int keyPosX = random.Next(rooms[keyPosition].startPosX + 1, rooms[keyPosition].endPosX - 1);
-                if (map[keyPosY, keyPosX] == (int)CellStates.EMPTY)
-                {
-                    key++;
-                    map[keyPosY, keyPosX] = key + 3;
+            PlaceKeysOnMap(map, rooms, random, keyPositions);
 
-                }
-            }
+            PrepareEnemiesItemsSpawnPlaces(map, enemyPositionList, itemPositionList);
 
-            foreach(var coordinate in enemyPositionList)
-            {
-                map[coordinate.Item1, coordinate.Item2] = 7;
-            }
-
-            foreach (var coordinate in itemPositionList)
-            {
-                map[coordinate.Item1, coordinate.Item2] = 8;
-            }
+            PrepareEnterAndExit(map, random, rooms);
         }
 
         private void PlaceRoomsOnMap(int[,] map, List<Room> rooms) {
@@ -269,13 +252,13 @@ namespace rogue1980.domain
             {
                 for (int y = room.startPosY; y <= room.endPosY; y++)
                 {
-                    map[y, room.startPosX] = (int)CellStates.WALL;
-                    map[y, room.endPosX] = (int)CellStates.WALL;
+                    map[y, room.startPosX] = (int)MapCellStates.WALL;
+                    map[y, room.endPosX] = (int)MapCellStates.WALL;
                 }
                 for (int x = room.startPosX; x <= room.endPosX; x++)
                 {
-                    map[room.startPosY, x] = (int)CellStates.WALL;
-                    map[room.endPosY, x] = (int)CellStates.WALL;
+                    map[room.startPosY, x] = (int)MapCellStates.WALL;
+                    map[room.endPosY, x] = (int)MapCellStates.WALL;
                 }
             }
         }
@@ -286,14 +269,14 @@ namespace rogue1980.domain
             {
                 foreach ((int posY, int posX) in route.Item1.tiles)
                 {
-                    map[posY, posX] = (int)CellStates.CORRIDOR;
+                    map[posY, posX] = (int)MapCellStates.CORRIDOR;
                 }
                 if (route.Item2 != 0)
                 {
                     int tileIndexToPick = random.Next(route.Item1.tiles.Count);
                     int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
                     int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
-                    map[doorPosY, doorPosX] = 3 + route.Item2;
+                    map[doorPosY, doorPosX] = (int)MapCellStates.KEY_DOOR + route.Item2;
                 }
             }
         }
@@ -306,13 +289,13 @@ namespace rogue1980.domain
                 {
                     for (int x = -1; x < 2; x++)
                     {
-                        if (map[y + doorPair.Item1.posY, x + doorPair.Item1.posX] == (int)CellStates.WALL && Math.Abs(y + x) % 2 == 1)
+                        if (map[y + doorPair.Item1.posY, x + doorPair.Item1.posX] == (int)MapCellStates.WALL && Math.Abs(y + x) % 2 == 1)
                         {
-                            map[y + doorPair.Item1.posY, x + doorPair.Item1.posX] = (int)CellStates.DOOR;
+                            map[y + doorPair.Item1.posY, x + doorPair.Item1.posX] = (int)MapCellStates.DOOR;
                         }
-                        if (map[y + doorPair.Item2.posY, x + doorPair.Item2.posX] == (int)CellStates.WALL && Math.Abs(y + x) % 2 == 1)
+                        if (map[y + doorPair.Item2.posY, x + doorPair.Item2.posX] == (int)MapCellStates.WALL && Math.Abs(y + x) % 2 == 1)
                         {
-                            map[y + doorPair.Item2.posY, x + doorPair.Item2.posX] = (int)CellStates.DOOR;
+                            map[y + doorPair.Item2.posY, x + doorPair.Item2.posX] = (int)MapCellStates.DOOR;
                         }
                     }
                 }
@@ -326,13 +309,37 @@ namespace rogue1980.domain
             {
                 int keyPosY = random.Next(rooms[keyPosition].startPosY + 1, rooms[keyPosition].endPosY - 1);
                 int keyPosX = random.Next(rooms[keyPosition].startPosX + 1, rooms[keyPosition].endPosX - 1);
-                if (map[keyPosY, keyPosX] == (int)CellStates.EMPTY)
+                if (map[keyPosY, keyPosX] == (int)DoorLockState.OPEN)
                 {
                     key++;
-                    map[keyPosY, keyPosX] = key + 5;
-
+                    map[keyPosY, keyPosX] = key + (int)MapCellStates.KEY_DOOR;
                 }
             }
+        }
+
+        private void PrepareEnemiesItemsSpawnPlaces(int[,] map, List<(int, int)> enemyPositionList, List<(int, int)> itemPositionList)
+        {
+            foreach (var coordinate in enemyPositionList)
+            {
+                map[coordinate.Item1, coordinate.Item2] = (int)MapCellStates.ENEMY;
+            }
+
+            foreach (var coordinate in itemPositionList)
+            {
+                map[coordinate.Item1, coordinate.Item2] = (int)MapCellStates.ITEM;
+            }
+        }
+
+        private void PrepareEnterAndExit(int[,] map, Random random, List<Room> rooms)
+        {
+            int enemyPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
+            int enemyPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+            map[enemyPosY, enemyPosX] = (int)MapCellStates.ENTER;
+
+            int roomToChoose = random.Next(1, rooms.Count);
+            enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
+            enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+            map[enemyPosY, enemyPosX] = (int)MapCellStates.EXIT;
         }
 
         public static double GetDistanceBetweenRooms(Room roomA, Room roomB)
