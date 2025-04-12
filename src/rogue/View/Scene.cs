@@ -106,7 +106,9 @@ class Scene {
         else
           action = "used";
         bool ok = game.UseItem(i);
-        if (ok)
+        if (ok && i is Key)
+          msg = string.Format("You unlocked {0} Door.", i.subtype);
+        else if (ok)
           msg = string.Format("You {3} {0} (+{1} {2}).", name, i.value, i.subtype, action);
         else if (i is Weapon)
           msg = "You can't change weapons here.";
@@ -150,7 +152,6 @@ class Scene {
           if (y != player.y || x != player.x)
             NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, ".");
         }
-        // TODO: add color to doors
         if (lvl.field[y, x] == (int)MapCellStates.DOOR) {
           NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "/");
         }
@@ -192,6 +193,10 @@ class Scene {
         NCurses.AttributeSet(NCurses.ColorPair(k.value));
       NCurses.MoveAddString(i.y + Y_BORDER, i.x + X_BORDER, i.symbol);
     }
+    foreach (var d in lvl.doors) {
+      NCurses.AttributeSet(NCurses.ColorPair(d.color));
+      NCurses.MoveAddString(d.posY + Y_BORDER, d.posX + X_BORDER, "/");
+    }
   }
 
   public void ListInventory() {
@@ -216,8 +221,7 @@ class Scene {
     }
     int begin =
         (items.Count < 9 && type == (int)Items.WEAPON && player.currWeapon.equipped) ? 0 : 1;
-    messages.Enqueue(
-        string.Format("Choose {0} | ESC to return:", stype));
+    messages.Enqueue(string.Format("Choose {0} | ESC to return:", stype));
     if (items.Count < 9 && type == (int)Items.WEAPON && player.currWeapon.equipped) {
       messages.Enqueue("0. Unequip current weapon");
       begin++;

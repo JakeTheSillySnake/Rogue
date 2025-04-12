@@ -6,13 +6,16 @@
     EXIT,
     WALL,
     DOOR,
+    DOOR_RED,
+    DOOR_GREEN,
+    DOOR_BLUE,
     BUSY,
     ENEMY,
     ITEM,
-    KEY_DOOR = 9,
-    KEY_DOOR_RED = 10,
-    KEY_DOOR_GREEN = 11,
-    KEY_DOOR_BLUE = 12,
+    KEY,
+    KEY_RED,
+    KEY_GREEN,
+    KEY_BLUE
   }
 
 enum Colors {
@@ -23,4 +26,6 @@ enum Colors {
   GREEN,
   MAGENTA
 }
+
+enum DoorLockState { OPEN, LOCKED }
 }

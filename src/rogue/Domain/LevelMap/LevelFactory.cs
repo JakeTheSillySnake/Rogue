@@ -245,7 +245,7 @@
           int tileIndexToPick = random.Next(route.Item1.tiles.Count);
           int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
           int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
-          map[doorPosY, doorPosX] = (int)MapCellStates.KEY_DOOR + route.Item2;
+          map[doorPosY, doorPosX] = (int)MapCellStates.DOOR + route.Item2;
         }
       }
     }
@@ -275,7 +275,7 @@
         int keyPosX = random.Next(rooms[keyPosition].startPosX + 1, rooms[keyPosition].endPosX - 1);
         if (map[keyPosY, keyPosX] == (int)DoorLockState.OPEN) {
           key++;
-          map[keyPosY, keyPosX] = key + (int)MapCellStates.KEY_DOOR;
+          map[keyPosY, keyPosX] = key + (int)MapCellStates.KEY;
         }
       }
     }

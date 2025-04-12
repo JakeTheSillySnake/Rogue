@@ -7,6 +7,7 @@ public class Level {
 
   public List<Enemy> enemies = [];
   public List<Item> items = [];
+  public List<Door> doors = [];
 
   public Level(int difficulty) {
     var factory = new LevelFactory();
@@ -26,12 +27,18 @@ public class Level {
           int item = rnd.Next(Enum.GetNames(typeof(Items)).Length - 2);
           SpawnItem(item, x, y);
         }
-        if (field[y, x] == (int)MapCellStates.KEY_DOOR_BLUE)
+        if (field[y, x] == (int)MapCellStates.KEY_BLUE)
           SpawnKey((int)Colors.BLUE, x, y);
-        if (field[y, x] == (int)MapCellStates.KEY_DOOR_RED)
+        if (field[y, x] == (int)MapCellStates.KEY_RED)
           SpawnKey((int)Colors.RED, x, y);
-        if (field[y, x] == (int)MapCellStates.KEY_DOOR_GREEN)
+        if (field[y, x] == (int)MapCellStates.KEY_GREEN)
           SpawnKey((int)Colors.GREEN, x, y);
+        if (field[y, x] == (int)MapCellStates.DOOR_BLUE)
+          SpawnDoor((int)Colors.BLUE, x, y);
+        if (field[y, x] == (int)MapCellStates.DOOR_RED)
+          SpawnDoor((int)Colors.RED, x, y);
+        if (field[y, x] == (int)MapCellStates.DOOR_GREEN)
+          SpawnDoor((int)Colors.GREEN, x, y);
       }
     }
   }
@@ -102,6 +109,12 @@ public class Level {
     items[idx].Spawn(x, y);
   }
 
+  public void SpawnDoor(int color, int x, int y) {
+    doors.Add(new Door(y, x, (int)DoorLockState.LOCKED));
+    int idx = doors.Count - 1;
+    doors[idx].SetColor(color);
+  }
+
   public bool DropWeapon(Player p) {
     var w = new Weapon { name = p.currWeapon.name, value = p.currWeapon.value };
     int x = p.x, y = p.y;
@@ -140,6 +153,10 @@ public class Level {
     for (int i = 0; i < items.Count; i++) {
       if (items[i].active)
         field[items[i].y, items[i].x] = itemCode + i;
+    }
+    foreach (var d in doors) {
+      if (d.lockState == (int)DoorLockState.OPEN)
+        field[d.posY, d.posX] = (int)MapCellStates.DOOR;
     }
   }
 

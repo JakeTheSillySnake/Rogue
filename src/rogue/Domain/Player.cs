@@ -209,6 +209,28 @@ public class Player : Entity {
     backpack.RemoveItem(item);
   }
 
+  public bool UseKey(Key key, Level lvl) {
+    bool ok = true;
+    int door;
+    if (key.value == (int)Colors.BLUE)
+      door = (int)MapCellStates.DOOR_BLUE;
+    else if (key.value == (int)Colors.RED)
+      door = (int)MapCellStates.DOOR_RED;
+    else
+      door = (int)MapCellStates.DOOR_GREEN;
+    if (lvl.field[y, x + 1] == door || lvl.field[y, x - 1] == door || lvl.field[y - 1, x] == door ||
+        lvl.field[y + 1, x] == door) {
+      // found door
+      foreach (var d in lvl.doors) {
+        if (d.color == key.value)
+          d.lockState = (int)DoorLockState.OPEN;
+      }
+      backpack.RemoveItem(key);
+    } else
+      ok = false;
+    return ok;
+  }
+
   public void RemoveCurrWeapon() {
     currWeapon.equipped = false;
     var w = new Weapon { name = currWeapon.name, value = currWeapon.value };

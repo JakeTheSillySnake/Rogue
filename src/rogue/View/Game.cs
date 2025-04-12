@@ -25,7 +25,7 @@ class Game {
     if (endPos[0] == player.y && endPos[1] == player.x) {
       if (player.lvl == 22)
         isOver = true;
-      else 
+      else
         NextLevel();
       return "";
     }
@@ -50,15 +50,19 @@ class Game {
     lvl = new(_difficulty);
     var playerPos = lvl.GetStartPos();
     player.InitCoords(playerPos[1], playerPos[0]);
+    player.backpack.keys.Clear();
   }
 
   public bool UseItem(Item item) {
     bool success = true;
     if (item is Weapon && player.currWeapon.equipped)
       success = lvl.DropWeapon(player);
-    if (success)
+    if (item is Key k) {
+      success = player.UseKey(k, lvl);
+      if (success)
+        lvl.UpdateField();
+    } else if (success)
       player.UseItem(item);
-    // TODO: add check for keys vs doors
     return success;
   }
 
