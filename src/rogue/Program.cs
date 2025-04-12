@@ -1,7 +1,8 @@
-﻿using System.Text;
-using Mindmagma.Curses;
+﻿using Mindmagma.Curses;
 
 using rogue.View;
+
+// using rogue.Domain.LevelMap;
 
 class Program {
   static void Main() {

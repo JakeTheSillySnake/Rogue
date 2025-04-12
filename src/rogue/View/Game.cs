@@ -1,35 +1,37 @@
 namespace rogue.View;
 
 using rogue.Domain;
+using rogue.Domain.LevelMap;
 
 class Game {
   public bool isOver = false, killEnemy = false;
+  private int _difficulty = 2;
 
-  public Level lvl = new();
-  public Player player = new(34, 14);
+  public Level lvl;
+  public Player player;
   public Queue<string> messages = new();
   public List<int> attackResult = [];
 
   public Game() {
-    // generate some enemies
-    lvl.SpawnEnemy((int)Enemies.ZOMBIE, 12, 5);
-    // lvl.SpawnEnemy((int)Enemies.SNAKE, 6, 10);
-    lvl.SpawnEnemy((int)Enemies.MIMIC, 57, 14);
-    // lvl.SpawnEnemy((int)Enemies.VAMPIRE, 30, 12);
-
-    // generate some items
-    lvl.SpawnItem((int)Items.WEAPON, 40, 14);
-    lvl.SpawnItem((int)Items.POTION, 50, 10);
-    lvl.SpawnItem((int)Items.POTION, 6, 12);
-    lvl.SpawnItem((int)Items.POTION, 30, 12);
-    lvl.SpawnItem((int)Items.WEAPON, 20, 10);
+    lvl = new(_difficulty);
+    var playerPos = lvl.GetStartPos();
+    player = new(playerPos[1], playerPos[0]);
   }
 
   public string UpdateGame(int action) {
     messages.Clear();
+    // check for level end
+    List<int> endPos = lvl.GetEndPos();
+    if (endPos[0] == player.y && endPos[1] == player.x) {
+      if (player.lvl == 22)
+        isOver = true;
+      else 
+        NextLevel();
+      return "";
+    }
     // damage to enemy
     attackResult = player.Move(action, lvl);
-    killEnemy = lvl.ProcessDamage(attackResult);
+    killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
     ProcessItemMessages();
 
     // damage to player
@@ -38,12 +40,25 @@ class Game {
     return attacker;
   }
 
+  public void NextLevel() {
+    // adjust difficulty
+    player.lvl++;
+    _difficulty = player.lvl / 2;
+    if ((float)player.hp / player.hp_max <= 0.5)
+      _difficulty = _difficulty > 1 ? _difficulty - 1 : 1;
+
+    lvl = new(_difficulty);
+    var playerPos = lvl.GetStartPos();
+    player.InitCoords(playerPos[1], playerPos[0]);
+  }
+
   public bool UseItem(Item item) {
     bool success = true;
     if (item is Weapon && player.currWeapon.equipped)
       success = lvl.DropWeapon(player);
     if (success)
       player.UseItem(item);
+    // TODO: add check for keys vs doors
     return success;
   }
 
@@ -56,6 +71,8 @@ class Game {
     if (pos < 0)
       return;
     var i = lvl.items[pos];
+    if (i is Weapon w)
+      lvl.PickUpWeapon(w);
     string item = "";
     if (i is Treasure)
       item = string.Format("{0} Coins", i.value);
@@ -63,6 +80,8 @@ class Game {
       item = string.Format("{0} of {1}", i.type, i.subtype);
     else if (i is Food || i is Weapon)
       item = string.Format("{0}", i.name);
+    else if (i is Key)
+      item = string.Format("{0} Key", i.subtype);
     messages.Enqueue(string.Format("You collected {0}!", item));
   }
 

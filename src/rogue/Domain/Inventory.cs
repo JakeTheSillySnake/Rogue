@@ -2,7 +2,9 @@ namespace rogue.Domain;
 
 using System.Collections.Generic;
 
-enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE }
+using rogue.Domain.LevelMap;
+
+enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE, KEY }
 
 enum Effects { Health = 0, Strength, Agility }
 
@@ -22,6 +24,7 @@ public class Item {
 public class Weapon : Item {
   private readonly string[] _weapons = ["Knife", "Spear", "Sword", "Axe", "Mace"];
   public bool equipped = false;
+  public int floorState = 0;
 
   public Weapon() {
     Random rnd = new();
@@ -82,6 +85,20 @@ public class Food : Item {
   }
 }
 
+public class Key : Item {
+  public Key(int color) {
+    type = "Key";
+    if (color == (int)Colors.RED)
+      subtype = "Red";
+    else if (color == (int)Colors.BLUE)
+      subtype = "Blue";
+    else if (color == (int)Colors.GREEN)
+      subtype = "Green";
+    symbol = "k";
+    value = color;
+  }
+}
+
 public class Treasure : Item {
   public Treasure() {
     type = "Treasure";
@@ -96,6 +113,7 @@ public class Inventory {
   public List<Potion> potions = [];
   public List<Scroll> scrolls = [];
   public List<Food> food = [];
+  public List<Key> keys = [];
 
   public Inventory() {}
 
@@ -129,6 +147,8 @@ public class Inventory {
         success = false;
       else
         food.Add(f);
+    } else if (i is Key k) {
+      keys.Add(k);
     }
     return success;
   }
@@ -142,6 +162,8 @@ public class Inventory {
       scrolls.Remove(s);
     } else if (i is Food f) {
       food.Remove(f);
+    } else if (i is Key k) {
+      keys.Remove(k);
     }
   }
 }

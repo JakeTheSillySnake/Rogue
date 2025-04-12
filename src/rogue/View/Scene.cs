@@ -1,11 +1,13 @@
 namespace rogue.View;
 
 using Mindmagma.Curses;
+
+using rogue.Domain.LevelMap;
 using rogue.Domain;
 
 class Scene {
-  public const int X_BORDER = 5, Y_BORDER = 1, MSG_START = 3;
-  public Level lvl = new();
+  public const int X_BORDER = 1, Y_BORDER = 1, MSG_START = 3;
+  public Level lvl = new(3);
   public Player player = new(0, 0);
   public Queue<string> messages = new();
 
@@ -16,12 +18,13 @@ class Scene {
     NCurses.InitPair((int)Colors.RED, CursesColor.RED, CursesColor.BLACK);
     NCurses.InitPair((int)Colors.YELLOW, CursesColor.YELLOW, CursesColor.BLACK);
     NCurses.InitPair((int)Colors.GREEN, CursesColor.GREEN, CursesColor.BLACK);
+    NCurses.InitPair((int)Colors.MAGENTA, CursesColor.MAGENTA, CursesColor.BLACK);
   }
 
   public void DrawScene() {
     DrawField();
-    DrawEnemies();
     DrawItems();
+    DrawEnemies();
     DrawPlayer();
   }
 
@@ -64,6 +67,11 @@ class Scene {
       type = (int)Items.SCROLL;
       ListItems(items, type, "Scroll");
       DrawMessages();
+    } else if (action == 'l' || action == 'L') {
+      items.AddRange(player.backpack.keys);
+      type = (int)Items.KEY;
+      ListItems(items, type, "Key");
+      DrawMessages();
     }
     if (game.isOver) {
       GameEndMessage(killer);
@@ -100,8 +108,10 @@ class Scene {
         bool ok = game.UseItem(i);
         if (ok)
           msg = string.Format("You {3} {0} (+{1} {2}).", name, i.value, i.subtype, action);
-        else
+        else if (i is Weapon)
           msg = "You can't change weapons here.";
+        else
+          msg = "Can't use this here.";
       }
       NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
       NCurses.MoveAddString(Level.ROWS + MSG_START, X_BORDER + 1, msg);
@@ -121,20 +131,31 @@ class Scene {
   public void DrawField() {
     NCurses.AttributeSet(NCurses.ColorPair(2) | CursesAttribute.NORMAL);
     // field borders
-    NCurses.MoveAddString(0, X_BORDER,
-                          " ____________________________________________________________________ ");
-    NCurses.MoveAddString(Level.ROWS, X_BORDER,
-                          "|____________________________________________________________________|");
+    for (int i = 1; i < Level.COLS - 1; i++) NCurses.MoveAddChar(Y_BORDER, X_BORDER + i, '_');
+    for (int i = 0; i < Level.COLS; i++) NCurses.MoveAddChar(Level.ROWS, X_BORDER + i, '_');
     for (int i = 1; i < Level.ROWS; i++) {
-      NCurses.MoveAddString(
-          i, X_BORDER, "|                                                                    |");
+      NCurses.MoveAddChar(Y_BORDER + i, X_BORDER, '|');
+      NCurses.MoveAddChar(Y_BORDER + i, Level.COLS, '|');
     }
-    // room(s)
-    for (int i = 0; i < Level.ROWS; i++) {
-      for (int j = 0; j < Level.COLS; j++) {
-        if (lvl.field[i, j] == (int)CellStates.WALL) {
-          NCurses.MoveAddString(i + Y_BORDER, j + X_BORDER, ".");
+    // rooms
+    List<int> endPos = lvl.GetEndPos();
+    for (int y = 0; y < Level.ROWS; y++) {
+      for (int x = 0; x < Level.COLS; x++) {
+        if (lvl.field[y, x] == (int)MapCellStates.WALL) {
+          NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "#");
         }
+        if (lvl.field[y, x] == (int)MapCellStates.CORRIDOR ||
+            lvl.field[y, x] == (int)MapCellStates.EMPTY ||
+            lvl.field[y, x] == (int)MapCellStates.ENTER) {
+          if (y != player.y || x != player.x)
+            NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, ".");
+        }
+        // TODO: add color to doors
+        if (lvl.field[y, x] == (int)MapCellStates.DOOR) {
+          NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "/");
+        }
+        if (endPos[0] == y && endPos[1] == x)
+          NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "x");
       }
     }
     // status bar
@@ -142,7 +163,7 @@ class Scene {
     if (player.effect != "")
       effect = string.Format("{0} ({1})", player.effect, player.effCount);
     NCurses.MoveAddString(
-        Level.ROWS + 1, X_BORDER + 1,
+        Level.ROWS + Y_BORDER, X_BORDER + 1,
         string.Format("LVL: {0}(21), HP: {1}({2}), STR: {3}, AGL: {4}, EFFECTS: {5}", player.lvl,
                       player.hp, player.hp_max, player.str, player.agl, effect));
   }
@@ -156,15 +177,19 @@ class Scene {
     NCurses.AttributeSet(CursesAttribute.BOLD);
     foreach (var e in lvl.enemies) {
       NCurses.AttributeSet(NCurses.ColorPair(e.color));
+      if (e is Mimic && e.symbol != "m")
+        NCurses.AttributeSet(NCurses.ColorPair(6));
       NCurses.MoveAddString(e.y + Y_BORDER, e.x + X_BORDER, e.symbol);
     }
   }
 
   public void DrawItems() {
-    NCurses.AttributeSet(NCurses.ColorPair(2));
     foreach (var i in lvl.items) {
+      NCurses.AttributeSet(NCurses.ColorPair(6));
       if (i is Treasure)
         NCurses.AttributeSet(NCurses.ColorPair(4));
+      if (i is Key k)
+        NCurses.AttributeSet(NCurses.ColorPair(k.value));
       NCurses.MoveAddString(i.y + Y_BORDER, i.x + X_BORDER, i.symbol);
     }
   }
@@ -176,6 +201,7 @@ class Scene {
     messages.Enqueue(string.Format("Scrolls: {0} (Press E to Use)", player.backpack.scrolls.Count));
     messages.Enqueue(string.Format("Food: {0} (Press J to Use)", player.backpack.food.Count));
     messages.Enqueue(string.Format("Weapons: {0} (Press H to Use)", player.backpack.weapons.Count));
+    messages.Enqueue(string.Format("Keys: {0} (Press L to Use)", player.backpack.keys.Count));
   }
 
   public void ListItems(List<Item> items, int type, string stype) {
@@ -190,7 +216,8 @@ class Scene {
     }
     int begin =
         (items.Count < 9 && type == (int)Items.WEAPON && player.currWeapon.equipped) ? 0 : 1;
-    messages.Enqueue(string.Format("Choose {0} ({1}-9) | ESC to return:", stype, begin));
+    messages.Enqueue(
+        string.Format("Choose {0} | ESC to return:", stype));
     if (items.Count < 9 && type == (int)Items.WEAPON && player.currWeapon.equipped) {
       messages.Enqueue("0. Unequip current weapon");
       begin++;
@@ -199,9 +226,14 @@ class Scene {
       string name;
       if (i is Weapon || i is Food)
         name = i.name;
+      else if (i is Key)
+        name = string.Format("{0} Key", i.subtype);
       else
         name = string.Format("{0} of {1}", i.type, i.subtype);
-      messages.Enqueue(string.Format("{0}. {1} ({2} +{3})", begin, name, i.subtype, i.value));
+      if (i is Key)
+        messages.Enqueue(string.Format("{0}. {1}", begin, name));
+      else
+        messages.Enqueue(string.Format("{0}. {1} ({2} +{3})", begin, name, i.subtype, i.value));
       begin++;
     }
   }
@@ -218,8 +250,14 @@ class Scene {
   }
 
   public void GameEndMessage(string killer) {
-    NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
-    string msg = string.Format("You were defeated by {0}!", killer);
+    string msg;
+    if (killer == "") {
+      NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
+      msg = string.Format("You won! Total score: {0}", player.GetTreasure());
+    } else {
+      NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
+      msg = string.Format("You were defeated by {0}!", killer);
+    }
     NCurses.MoveAddString(Level.ROWS + MSG_START + messages.Count, X_BORDER + 1, msg);
   }
 }

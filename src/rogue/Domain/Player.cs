@@ -2,13 +2,7 @@ namespace rogue.Domain;
 
 using System.Collections.Generic;
 
-enum Colors {
-  BLUE = 1,
-  WHITE,
-  RED,
-  YELLOW,
-  GREEN,
-}
+using rogue.Domain.LevelMap;
 
 public class Entity {
   public int x, y, hp, hp_max, str, agl, color;
@@ -26,34 +20,36 @@ public class Entity {
     int distY = Math.Abs(this.y - y);
     int distX = Math.Abs(this.x - x);
     int dist = (int)Math.Sqrt(Math.Pow(distX, 2) + Math.Pow(distY, 2));
-
-    // TODO: dist is 1000 if no path exists
     return dist;
   }
 
   public bool CheckRight(Level lvl, int dist) {
-    if (lvl.field[y, x + dist] == (int)CellStates.EMPTY || lvl.field[y, x + dist] >= Level.itemCode)
+    if (lvl.field[y, x + dist] < (int)MapCellStates.WALL ||
+        lvl.field[y, x + dist] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckLeft(Level lvl, int dist) {
-    if (lvl.field[y, x - dist] == (int)CellStates.EMPTY || lvl.field[y, x - dist] >= Level.itemCode)
+    if (lvl.field[y, x - dist] < (int)MapCellStates.WALL ||
+        lvl.field[y, x - dist] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckUp(Level lvl, int dist) {
-    if (lvl.field[y - dist, x] == (int)CellStates.EMPTY || lvl.field[y - dist, x] >= Level.itemCode)
+    if (lvl.field[y - dist, x] < (int)MapCellStates.WALL ||
+        lvl.field[y - dist, x] >= Level.itemCode)
       return true;
     else
       return false;
   }
 
   public bool CheckDown(Level lvl, int dist) {
-    if (lvl.field[y + dist, x] == (int)CellStates.EMPTY || lvl.field[y + dist, x] >= Level.itemCode)
+    if (lvl.field[y + dist, x] < (int)MapCellStates.WALL ||
+        lvl.field[y + dist, x] >= Level.itemCode)
       return true;
     else
       return false;
@@ -87,25 +83,25 @@ public class Player : Entity {
       return res;
     }
     if (action == 'a' || action == 'A') {
-      if (CheckLeft(lvl, 1))
+      if (CheckLeft(lvl, 1) || lvl.field[y, x - 1] == (int)MapCellStates.DOOR)
         x--;
       else
         res = Attack(lvl, x - 1, y);
     }
     if (action == 'd' || action == 'D') {
-      if (CheckRight(lvl, 1))
+      if (CheckRight(lvl, 1) || lvl.field[y, x + 1] == (int)MapCellStates.DOOR)
         x++;
       else
         res = Attack(lvl, x + 1, y);
     }
     if (action == 'w' || action == 'W') {
-      if (CheckUp(lvl, 1))
+      if (CheckUp(lvl, 1) || lvl.field[y - 1, x] == (int)MapCellStates.DOOR)
         y--;
       else
         res = Attack(lvl, x, y - 1);
     }
     if (action == 's' || action == 'S') {
-      if (CheckDown(lvl, 1))
+      if (CheckDown(lvl, 1) || lvl.field[y + 1, x] == (int)MapCellStates.DOOR)
         y++;
       else
         res = Attack(lvl, x, y + 1);
@@ -149,7 +145,8 @@ public class Player : Entity {
 
   public List<int> Attack(Level lvl, int targetX, int targetY) {
     List<int> res = [0, 0];
-    if (lvl.field[targetY, targetX] == (int)CellStates.WALL)
+    if (lvl.field[targetY, targetX] < Level.enemyCode ||
+        lvl.field[targetY, targetX] >= Level.itemCode)
       return res;
     int pos = lvl.field[targetY, targetX] - Level.enemyCode;
     int enemyAgl = lvl.enemies[pos].agl, chance;

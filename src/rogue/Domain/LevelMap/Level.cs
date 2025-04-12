@@ -1,39 +1,67 @@
-namespace rogue.Domain;
-
-enum CellStates { EMPTY = 0, WALL }
+namespace rogue.Domain.LevelMap;
 
 public class Level {
-  public const int ROWS = 20, COLS = 70;
+  public const int ROWS = 22, COLS = 80;
   public int[,] field = new int[ROWS, COLS];
   public static int enemyCode = 100, itemCode = 1000;
 
   public List<Enemy> enemies = [];
   public List<Item> items = [];
 
-  public Level() {
-    for (int i = 0; i < ROWS; i++) {
-      for (int j = 0; j < COLS; j++) {
-        field[i, j] = (int)CellStates.EMPTY;
-      }
-    }
-    // basic room
-    for (int i = 0; i < ROWS; i++) {
-      for (int j = 0; j < COLS; j++) {
-        if (j == 4 || j == 65) {
-          if (i != 0 && i < 18)
-            field[i, j] = (int)CellStates.WALL;
+  public Level(int difficulty) {
+    var factory = new LevelFactory();
+    field = factory.createLevelMap(ROWS, COLS, difficulty);
+    TransformRawMap();
+  }
+
+  public void TransformRawMap() {
+    Random rnd = new();
+    for (int y = 0; y < ROWS; y++) {
+      for (int x = 0; x < COLS; x++) {
+        if (field[y, x] == (int)MapCellStates.ENEMY) {
+          int enemy = rnd.Next(Enum.GetNames(typeof(Enemies)).Length);
+          SpawnEnemy(enemy, x, y);
         }
-        if (i == 1 || i == 17) {
-          if (j > 3 && j < 66)
-            field[i, j] = (int)CellStates.WALL;
+        if (field[y, x] == (int)MapCellStates.ITEM) {
+          int item = rnd.Next(Enum.GetNames(typeof(Items)).Length - 2);
+          SpawnItem(item, x, y);
         }
+        if (field[y, x] == (int)MapCellStates.KEY_DOOR_BLUE)
+          SpawnKey((int)Colors.BLUE, x, y);
+        if (field[y, x] == (int)MapCellStates.KEY_DOOR_RED)
+          SpawnKey((int)Colors.RED, x, y);
+        if (field[y, x] == (int)MapCellStates.KEY_DOOR_GREEN)
+          SpawnKey((int)Colors.GREEN, x, y);
       }
     }
   }
 
-  public void ClearLevel() {
-    enemies.Clear();
-    items.Clear();
+  public List<int> GetStartPos() {
+    List<int> res = [0, 0];
+    for (int y = 0; y < ROWS; y++) {
+      for (int x = 0; x < COLS; x++) {
+        if (field[y, x] == (int)MapCellStates.ENTER) {
+          res[0] = y;
+          res[1] = x;
+          return res;
+        }
+      }
+    }
+    return res;
+  }
+
+  public List<int> GetEndPos() {
+    List<int> res = [0, 0];
+    for (int y = 0; y < ROWS; y++) {
+      for (int x = 0; x < COLS; x++) {
+        if (field[y, x] == (int)MapCellStates.EXIT) {
+          res[0] = y;
+          res[1] = x;
+          return res;
+        }
+      }
+    }
+    return res;
   }
 
   public void SpawnEnemy(int type, int x, int y) {
@@ -54,7 +82,7 @@ public class Level {
   }
 
   public void SpawnItem(int type, int x, int y) {
-    if (type == (int)Items.WEAPON)
+    if (type == (int)Items.WEAPON) 
       items.Add(new Weapon());
     else if (type == (int)Items.POTION)
       items.Add(new Potion());
@@ -63,10 +91,15 @@ public class Level {
     else if (type == (int)Items.FOOD)
       items.Add(new Food());
     else if (type == (int)Items.TREASURE)
-      items.Add(new Treasure());
+      items.Add(new Treasure());;
     int idx = items.Count - 1;
     items[idx].Spawn(x, y);
-    field[y, x] = itemCode + idx;
+  }
+
+  public void SpawnKey(int color, int x, int y) {
+    items.Add(new Key(color));
+    int idx = items.Count - 1;
+    items[idx].Spawn(x, y);
   }
 
   public bool DropWeapon(Player p) {
@@ -84,15 +117,20 @@ public class Level {
       return false;
     items.Add(w);
     w.Spawn(x, y);
+    w.floorState = field[y, x];
     field[y, x] = itemCode + items.Count - 1;
     return true;
+  }
+
+  public void PickUpWeapon(Weapon w) {
+    field[w.y, w.x] = w.floorState;
   }
 
   public void UpdateField() {
     for (int i = 0; i < ROWS; i++) {
       for (int j = 0; j < COLS; j++) {
-        if (field[i, j] != (int)CellStates.WALL)
-          field[i, j] = (int)CellStates.EMPTY;
+        if (field[i, j] >= enemyCode)
+          field[i, j] = (int)MapCellStates.EMPTY;
       }
     }
     for (int i = 0; i < enemies.Count; i++) {
@@ -105,17 +143,16 @@ public class Level {
     }
   }
 
-  public bool ProcessDamage(List<int> res) {
+  public bool ProcessDamage(List<int> res, int difficulty) {
     if (res[1] == 0)
       return false;
     int pos = res[0] - enemyCode;
     bool dead = enemies[pos].ProcessDamage(res[1]);
-    int treasure = enemies[pos].GenTreasure();
+    int treasure = enemies[pos].GenTreasure() + difficulty;
     if (dead) {
       SpawnItem((int)Items.TREASURE, enemies[pos].x, enemies[pos].y);
       items[^1].value = treasure;
     }
     return dead;
   }
-  // level generation somewhere here
 }
