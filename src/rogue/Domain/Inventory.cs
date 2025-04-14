@@ -1,8 +1,8 @@
 namespace rogue.Domain;
 
 using System.Collections.Generic;
-
 using rogue.Domain.LevelMap;
+using rogue.Data;
 
 enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE, KEY }
 
@@ -32,7 +32,7 @@ public class Weapon : Item {
     type = "Weapon";
     subtype = "Strength";
     name = _weapons[idx];
-    value = Entity.valMid + idx;
+    value = Entity.valLow + idx;
     symbol = "!";
   }
 }
@@ -80,7 +80,7 @@ public class Food : Item {
     type = "Food";
     subtype = "Health";
     name = _food[idx];
-    value = Entity.valMid + idx;
+    value = Entity.valLow + idx;
     symbol = "+";
   }
 }
@@ -153,15 +153,18 @@ public class Inventory {
     return success;
   }
 
-  public void RemoveItem(Item i) {
+  public void RemoveItem(Item i, Statistics stats) {
     if (i is Weapon w) {
       weapons.Remove(w);
     } else if (i is Potion p) {
       potions.Remove(p);
+      stats.potions++;
     } else if (i is Scroll s) {
       scrolls.Remove(s);
+      stats.scrolls++;
     } else if (i is Food f) {
       food.Remove(f);
+      stats.food++;
     } else if (i is Key k) {
       keys.Remove(k);
     }

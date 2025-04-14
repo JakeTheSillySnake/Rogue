@@ -2,13 +2,15 @@ namespace rogue.View;
 
 using rogue.Domain;
 using rogue.Domain.LevelMap;
+using rogue.Data;
 
 class Game {
   public bool isOver = false, killEnemy = false;
-  private int _difficulty = 2;
+  private int _difficulty = 1;
 
   public Level lvl;
   public Player player;
+  public Statistics stats = new();
   public Queue<string> messages = new();
   public List<int> attackResult = [];
 
@@ -23,14 +25,14 @@ class Game {
     // check for level end
     List<int> endPos = lvl.GetEndPos();
     if (endPos[0] == player.y && endPos[1] == player.x) {
-      if (player.lvl == 22)
+      if (player.lvl == 21)
         isOver = true;
       else
         NextLevel();
       return "";
     }
     // damage to enemy
-    attackResult = player.Move(action, lvl);
+    attackResult = player.Move(action, lvl, stats);
     killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
     ProcessItemMessages();
 
@@ -41,8 +43,9 @@ class Game {
   }
 
   public void NextLevel() {
+    player.lvl = player.lvl == 21 ? 21 : player.lvl + 1;
+    stats.lvl = player.lvl;
     // adjust difficulty
-    player.lvl++;
     _difficulty = player.lvl / 2;
     if ((float)player.hp / player.hp_max <= 0.5)
       _difficulty = _difficulty > 1 ? _difficulty - 1 : 1;
@@ -62,7 +65,7 @@ class Game {
       if (success)
         lvl.UpdateField();
     } else if (success)
-      player.UseItem(item);
+      player.UseItem(item, stats);
     return success;
   }
 
@@ -78,9 +81,10 @@ class Game {
     if (i is Weapon w)
       lvl.PickUpWeapon(w);
     string item = "";
-    if (i is Treasure)
+    if (i is Treasure) {
       item = string.Format("{0} Coins", i.value);
-    else if (i is Potion || i is Scroll)
+      stats.treasure += i.value;
+    } else if (i is Potion || i is Scroll)
       item = string.Format("{0} of {1}", i.type, i.subtype);
     else if (i is Food || i is Weapon)
       item = string.Format("{0}", i.name);
@@ -114,8 +118,10 @@ class Game {
       }
       isOver = attack.Item1;
       lvl.UpdateField();
-      if (attack.Item2 > 0)
+      if (attack.Item2 > 0) {
         messages.Enqueue(string.Format("You were hit by {0}! (-{1} HP)", attacker, attack.Item2));
+        stats.hitsReceived++;
+      }
       if (isOver)
         return attacker;
     }
@@ -142,8 +148,11 @@ class Game {
     }
     if (enemy != "" && attackResult[1] != 0) {
       messages.Enqueue(string.Format("You dealt {0} damage to {1}!", attackResult[1], enemy));
-      if (killEnemy)
+      stats.hitsDealt++;
+      if (killEnemy) {
         messages.Enqueue(string.Format("You defeated {0}!", enemy));
+        stats.kills++;
+      }
     } else if (enemy != "")
       messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
     if (player.asleep)

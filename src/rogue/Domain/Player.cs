@@ -1,8 +1,8 @@
 namespace rogue.Domain;
 
 using System.Collections.Generic;
-
 using rogue.Domain.LevelMap;
+using rogue.Data;
 
 public class Entity {
   public int x, y, hp, hp_max, str, agl, color;
@@ -23,33 +23,37 @@ public class Entity {
     return dist;
   }
 
-  public bool CheckRight(Level lvl, int dist) {
+  public virtual bool CheckRight(Level lvl, int dist) {
     if (lvl.field[y, x + dist] < (int)MapCellStates.WALL ||
-        lvl.field[y, x + dist] >= Level.itemCode)
+        lvl.field[y, x + dist] >= Level.itemCode ||
+        lvl.field[y, x + dist] == (int)MapCellStates.DOOR)
       return true;
     else
       return false;
   }
 
-  public bool CheckLeft(Level lvl, int dist) {
+  public virtual bool CheckLeft(Level lvl, int dist) {
     if (lvl.field[y, x - dist] < (int)MapCellStates.WALL ||
-        lvl.field[y, x - dist] >= Level.itemCode)
+        lvl.field[y, x - dist] >= Level.itemCode ||
+        lvl.field[y, x - dist] == (int)MapCellStates.DOOR)
       return true;
     else
       return false;
   }
 
-  public bool CheckUp(Level lvl, int dist) {
+  public virtual bool CheckUp(Level lvl, int dist) {
     if (lvl.field[y - dist, x] < (int)MapCellStates.WALL ||
-        lvl.field[y - dist, x] >= Level.itemCode)
+        lvl.field[y - dist, x] >= Level.itemCode ||
+        lvl.field[y - dist, x] == (int)MapCellStates.DOOR)
       return true;
     else
       return false;
   }
 
-  public bool CheckDown(Level lvl, int dist) {
+  public virtual bool CheckDown(Level lvl, int dist) {
     if (lvl.field[y + dist, x] < (int)MapCellStates.WALL ||
-        lvl.field[y + dist, x] >= Level.itemCode)
+        lvl.field[y + dist, x] >= Level.itemCode ||
+        lvl.field[y + dist, x] == (int)MapCellStates.DOOR)
       return true;
     else
       return false;
@@ -67,15 +71,15 @@ public class Player : Entity {
 
   public Player(int x, int y) {
     symbol = "p";
-    hp = 4 * valHigh;
-    hp_max = 4 * valHigh;
-    str = valHigh;
-    agl = valHigh;
+    hp = 2 * valHigh;
+    hp_max = 2 * valHigh;
+    str = valMid;
+    agl = valMid;
     color = (int)Colors.BLUE;
     InitCoords(x, y);
   }
 
-  public List<int> Move(int action, Level lvl) {
+  public List<int> Move(int action, Level lvl, Statistics stats) {
     ProcessEffects();
     List<int> res = [0, 0];
     if (asleep) {
@@ -83,27 +87,31 @@ public class Player : Entity {
       return res;
     }
     if (action == 'a' || action == 'A') {
-      if (CheckLeft(lvl, 1) || lvl.field[y, x - 1] == (int)MapCellStates.DOOR)
+      if (CheckLeft(lvl, 1)) {
         x--;
-      else
+        stats.distWalked++;
+      } else
         res = Attack(lvl, x - 1, y);
     }
     if (action == 'd' || action == 'D') {
-      if (CheckRight(lvl, 1) || lvl.field[y, x + 1] == (int)MapCellStates.DOOR)
+      if (CheckRight(lvl, 1)) {
         x++;
-      else
+        stats.distWalked++;
+      } else
         res = Attack(lvl, x + 1, y);
     }
     if (action == 'w' || action == 'W') {
-      if (CheckUp(lvl, 1) || lvl.field[y - 1, x] == (int)MapCellStates.DOOR)
+      if (CheckUp(lvl, 1)) {
         y--;
-      else
+        stats.distWalked++;
+      } else
         res = Attack(lvl, x, y - 1);
     }
     if (action == 's' || action == 'S') {
-      if (CheckDown(lvl, 1) || lvl.field[y + 1, x] == (int)MapCellStates.DOOR)
+      if (CheckDown(lvl, 1)) {
         y++;
-      else
+        stats.distWalked++;
+      } else
         res = Attack(lvl, x, y + 1);
     }
     return res;
@@ -182,7 +190,7 @@ public class Player : Entity {
     return pos;
   }
 
-  public void UseItem(Item item) {
+  public void UseItem(Item item, Statistics stats) {
     if (item.subtype == "Health" && item is Food)
       hp += item.value;
     else if (item.subtype == "Health") {
@@ -206,7 +214,7 @@ public class Player : Entity {
       effCount = p.effectLen;
       currPotion = p;
     }
-    backpack.RemoveItem(item);
+    backpack.RemoveItem(item, stats);
   }
 
   public bool UseKey(Key key, Level lvl) {
@@ -225,7 +233,7 @@ public class Player : Entity {
         if (d.color == key.value)
           d.lockState = (int)DoorLockState.OPEN;
       }
-      backpack.RemoveItem(key);
+      backpack.RemoveItem(key, new Statistics());
     } else
       ok = false;
     return ok;

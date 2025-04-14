@@ -12,6 +12,38 @@ public abstract class Enemy : Entity {
 
   public abstract void Move(Level lvl);
 
+  public override bool CheckRight(Level lvl, int dist) {
+    if (lvl.field[y, x + dist] < (int)MapCellStates.EXIT ||
+        lvl.field[y, x + dist] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckLeft(Level lvl, int dist) {
+    if (lvl.field[y, x - dist] < (int)MapCellStates.EXIT ||
+        lvl.field[y, x - dist] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckUp(Level lvl, int dist) {
+    if (lvl.field[y - dist, x] < (int)MapCellStates.EXIT ||
+        lvl.field[y - dist, x] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckDown(Level lvl, int dist) {
+    if (lvl.field[y + dist, x] < (int)MapCellStates.EXIT ||
+        lvl.field[y + dist, x] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
   public virtual int Attack(Player p) {
     int chance = 0;
     Random rnd = new();
@@ -50,11 +82,10 @@ public abstract class Enemy : Entity {
         y++;
       if (p.y < y && (p.x != x || p.y + 1 != y) && CheckUp(lvl, 1))
         y--;
-      /*if (x == initX && y == initY) {
+      if (x == initX && y == initY) {
         // ignore player if no path exists
         follow = false;
-        Move(lvl);
-      }*/
+      }
     } else
       Move(lvl);
     return damage;
@@ -214,8 +245,10 @@ public class Ghost : Enemy {
     LoadRoom(lvl);
     if (_timer == 0) {
       Random rnd = new();
-      x = rnd.Next(_minX, _maxX + 1);
-      y = rnd.Next(_minY, _maxY + 1);
+      do {
+        x = rnd.Next(_minX, _maxX + 1);
+        y = rnd.Next(_minY, _maxY + 1);
+      } while (lvl.field[y, x] == (int)MapCellStates.EXIT);
       _timer = 6;
       // 20% chance to become invisible
       if (rnd.Next(1, 5) == 2 && !follow)
@@ -254,8 +287,11 @@ public class Snake : Enemy {
   }
 
   public override void Move(Level lvl) {
-    if (_steps > 0 && lvl.field[y + _dirY, x] == (int)MapCellStates.EMPTY &&
-        lvl.field[y, x + _dirX] == (int)MapCellStates.EMPTY) {
+    if (_steps > 0 &&
+        (lvl.field[y + _dirY, x] <= (int)MapCellStates.EXIT ||
+         lvl.field[y + _dirY, x] >= Level.itemCode) &&
+        (lvl.field[y, x + _dirX] <= (int)MapCellStates.EXIT ||
+         lvl.field[y + _dirY, x] >= Level.itemCode)) {
       x += _dirX;
       y += _dirY;
       _steps--;
