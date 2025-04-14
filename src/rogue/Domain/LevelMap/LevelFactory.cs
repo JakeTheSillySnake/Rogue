@@ -1,6 +1,6 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class LevelFactory {
-    public int[,] createLevelMap(int sizeY, int sizeX, int difficulty) {
+    public (int[,], List<Room>, List<(Route, int)>) createLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
         for (int x = 0; x < sizeX; x++)
@@ -17,7 +17,7 @@
       AssembleMap(map, random, rooms, routes, doorMST, keyPositions, enemyPositionList,
                   itemPositionList);
 
-      return map;
+      return (map, rooms, routes);
     }
 
     List<Room> GenerateRooms(int[,] map, Random random) {
@@ -238,7 +238,7 @@
     private void PlaceCorridorsOnMap(int[,] map, Random random, List<(Route, int)> routes) {
       foreach ((Route, int)route in routes) {
         foreach ((int posY, int posX) in route.Item1.tiles) {
-          if (map[posY, posX] == (int)MapCellStates.BUSY)
+          //if (map[posY, posX] == (int)MapCellStates.BUSY)
             map[posY, posX] = (int)MapCellStates.CORRIDOR;
         }
         if (route.Item2 != 0) {

@@ -65,7 +65,7 @@ public abstract class Enemy : Entity {
       asleep = false;
       return 0;
     }
-    int dist = DistanceToTarget(lvl, p.x, p.y), damage = 0;
+    int dist = DistanceToTarget(p.x, p.y), damage = 0;
     if (dist <= 1) {
       follow = true;
       damage = Attack(p);

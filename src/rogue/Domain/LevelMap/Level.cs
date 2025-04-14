@@ -8,10 +8,15 @@ public class Level {
   public List<Enemy> enemies = [];
   public List<Item> items = [];
   public List<Door> doors = [];
+  public List<Room> rooms = [];
+  public List<(Route, int)> corridors = [];
 
   public Level(int difficulty) {
     var factory = new LevelFactory();
-    field = factory.createLevelMap(ROWS, COLS, difficulty);
+    var result = factory.createLevelMap(ROWS, COLS, difficulty);
+    field = result.Item1;
+    rooms = result.Item2;
+    corridors = result.Item3;
     TransformRawMap();
   }
 

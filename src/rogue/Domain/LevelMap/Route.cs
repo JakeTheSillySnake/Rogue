@@ -1,6 +1,7 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class Route {
     public List<(int posY, int posX)> tiles { get; private set; }
+    public bool visited = false;
     public Route(int posYA, int posYB, int posXA, int posXB) {
       tiles = [(posYA, posXA)];
       List<(double distance, int posY, int posX)> bestTile = [];
@@ -23,6 +24,14 @@
 
     public double GetDistanceCoords(int posYA, int posYB, int posXA, int posXB) {
       return Math.Sqrt(Math.Pow(posYB - posYA, 2) + Math.Pow(posXB - posXA, 2));
+    }
+
+    public bool ContainsTarget(int x, int y) {
+      foreach (var (posY, posX) in tiles) {
+        if (posX == x && posY == y)
+          return true;
+      }
+      return false;
     }
   }
 }

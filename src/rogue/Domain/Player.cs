@@ -16,7 +16,7 @@ public class Entity {
     this.y = y;
   }
 
-  public int DistanceToTarget(Level lvl, int x, int y) {
+  public int DistanceToTarget(int x, int y) {
     int distY = Math.Abs(this.y - y);
     int distX = Math.Abs(this.x - x);
     int dist = (int)Math.Sqrt(Math.Pow(distX, 2) + Math.Pow(distY, 2));

@@ -6,6 +6,7 @@
     public int endPosY { get; private set; }
     public int centerPosX { get; private set; }
     public int centerPosY { get; private set; }
+    public bool visited = false;
 
     public Room() : this(new Random(), 0, 0, 9, 9) {}
     public Room(Random random, int startLimitPosY, int startLimitPosX, int endLimitPosY,
@@ -20,6 +21,11 @@
 
       centerPosY = (startPosY + endPosY) / 2;
       centerPosX = (startPosX + endPosX) / 2;
+    }
+    public bool ContainsTarget(int x, int y) {
+      if (x >= startPosX && x <= endPosX && y >= startPosY && y <= endPosY)
+        return true;
+      else return false;
     }
   }
 }

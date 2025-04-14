@@ -9,6 +9,7 @@ enum StartActions { Continue = 1, New, Stats }
 class Scene {
   public const int X_BORDER = 1, Y_BORDER = 1, MSG_START = 3;
   public Game game = new();
+  public Render render = new();
 
   public Scene() {
     NCurses.StartColor();
@@ -162,8 +163,13 @@ class Scene {
   }
 
   public void DrawField() {
+    DrawBorders();
+    DrawLevelMap();
+    DrawStatusBar();
+  }
+
+  public void DrawBorders() {
     NCurses.AttributeSet(NCurses.ColorPair(2));
-    // field borders
     for (int i = 1; i < Level.COLS - 1; i++) NCurses.MoveAddChar(Y_BORDER, X_BORDER + i, '_');
     for (int i = 0; i < Level.COLS; i++)
       NCurses.MoveAddChar(Level.ROWS + Y_BORDER - 1, X_BORDER + i, '_');
@@ -171,30 +177,39 @@ class Scene {
       NCurses.MoveAddChar(Y_BORDER + i, X_BORDER, '|');
       NCurses.MoveAddChar(Y_BORDER + i, Level.COLS, '|');
     }
-    // rooms
+  }
+
+  public void DrawLevelMap() {
+    var fieldMask = render.CreateLevelMask(game.lvl, game.player);
+    // exit point
     List<int> endPos = game.lvl.GetEndPos();
-    NCurses.MoveAddString(endPos[0] + Y_BORDER, endPos[1] + X_BORDER, "U");
+    if (render.fieldMask[endPos[0], endPos[1]] == (int)MapCellStates.EXIT)
+      NCurses.MoveAddString(endPos[0] + Y_BORDER, endPos[1] + X_BORDER, "E");
+
     NCurses.AttributeSet(NCurses.ColorPair(6));
     for (int y = 0; y < Level.ROWS; y++) {
       for (int x = 0; x < Level.COLS; x++) {
-        if (game.lvl.field[y, x] == (int)MapCellStates.WALL) {
+        if (fieldMask[y, x] == (int)MapCellStates.WALL) {
           NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "#");
         }
-        if (game.lvl.field[y, x] == (int)MapCellStates.CORRIDOR ||
-            game.lvl.field[y, x] == (int)MapCellStates.EMPTY ||
-            game.lvl.field[y, x] == (int)MapCellStates.ENTER) {
+        if (fieldMask[y, x] == (int)MapCellStates.CORRIDOR ||
+            fieldMask[y, x] == (int)MapCellStates.EMPTY ||
+            fieldMask[y, x] == (int)MapCellStates.ENTER) {
           if (y != game.player.y || x != game.player.x)
             NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, ".");
         }
-        if (game.lvl.field[y, x] == (int)MapCellStates.DOOR) {
+        if (fieldMask[y, x] == (int)MapCellStates.DOOR) {
           NCurses.MoveAddString(y + Y_BORDER, x + X_BORDER, "/");
         }
       }
     }
+  }
+
+  public void DrawStatusBar() {
     // controls menu
     NCurses.AttributeSet(NCurses.ColorPair(2));
     NCurses.MoveAddString(Y_BORDER - 1, X_BORDER + 1,
-                          "Player: WASD, Inventory: I, Quit: Q, Current Stats: X, Level Exit: U");
+                          "Player: WASD, Inventory: I, Quit: Q, Current Stats: X, Level Exit: E");
     // status bar
     string effect = "None";
     if (game.player.effect != "")
@@ -215,7 +230,8 @@ class Scene {
     NCurses.AttributeSet(CursesAttribute.BOLD);
     foreach (var e in game.lvl.enemies) {
       NCurses.AttributeSet(NCurses.ColorPair(e.color));
-      NCurses.MoveAddString(e.y + Y_BORDER, e.x + X_BORDER, e.symbol);
+      if (render.fieldMask[e.y, e.x] >= Level.enemyCode)
+        NCurses.MoveAddString(e.y + Y_BORDER, e.x + X_BORDER, e.symbol);
     }
   }
 
@@ -226,11 +242,13 @@ class Scene {
         NCurses.AttributeSet(NCurses.ColorPair(4));
       if (i is Key k)
         NCurses.AttributeSet(NCurses.ColorPair(k.value));
-      NCurses.MoveAddString(i.y + Y_BORDER, i.x + X_BORDER, i.symbol);
+      if (render.fieldMask[i.y, i.x] >= Level.itemCode)
+        NCurses.MoveAddString(i.y + Y_BORDER, i.x + X_BORDER, i.symbol);
     }
     foreach (var d in game.lvl.doors) {
       NCurses.AttributeSet(NCurses.ColorPair(d.color));
-      NCurses.MoveAddString(d.posY + Y_BORDER, d.posX + X_BORDER, "/");
+      if (render.fieldMask[d.posY, d.posX] != (int)MapCellStates.BUSY)
+        NCurses.MoveAddString(d.posY + Y_BORDER, d.posX + X_BORDER, "/");
     }
   }
 
