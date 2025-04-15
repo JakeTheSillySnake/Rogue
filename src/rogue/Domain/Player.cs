@@ -89,28 +89,28 @@ public class Player : Entity {
     if (action == 'a' || action == 'A') {
       if (CheckLeft(lvl, 1)) {
         x--;
-        stats.distWalked++;
+        stats.DistWalked++;
       } else
         res = Attack(lvl, x - 1, y);
     }
     if (action == 'd' || action == 'D') {
       if (CheckRight(lvl, 1)) {
         x++;
-        stats.distWalked++;
+        stats.DistWalked++;
       } else
         res = Attack(lvl, x + 1, y);
     }
     if (action == 'w' || action == 'W') {
       if (CheckUp(lvl, 1)) {
         y--;
-        stats.distWalked++;
+        stats.DistWalked++;
       } else
         res = Attack(lvl, x, y - 1);
     }
     if (action == 's' || action == 'S') {
       if (CheckDown(lvl, 1)) {
         y++;
-        stats.distWalked++;
+        stats.DistWalked++;
       } else
         res = Attack(lvl, x, y + 1);
     }

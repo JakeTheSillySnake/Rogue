@@ -44,7 +44,7 @@ class Game {
 
   public void NextLevel() {
     player.lvl = player.lvl == 21 ? 21 : player.lvl + 1;
-    stats.lvl = player.lvl;
+    stats.Lvl = player.lvl;
     // adjust difficulty
     _difficulty = player.lvl / 2;
     if ((float)player.hp / player.hp_max <= 0.5)
@@ -83,7 +83,7 @@ class Game {
     string item = "";
     if (i is Treasure) {
       item = string.Format("{0} Coins", i.value);
-      stats.treasure += i.value;
+      stats.Treasure += i.value;
     } else if (i is Potion || i is Scroll)
       item = string.Format("{0} of {1}", i.type, i.subtype);
     else if (i is Food || i is Weapon)
@@ -120,7 +120,7 @@ class Game {
       lvl.UpdateField();
       if (attack.Item2 > 0) {
         messages.Enqueue(string.Format("You were hit by {0}! (-{1} HP)", attacker, attack.Item2));
-        stats.hitsReceived++;
+        stats.HitsReceived++;
       }
       if (isOver)
         return attacker;
@@ -148,10 +148,10 @@ class Game {
     }
     if (enemy != "" && attackResult[1] != 0) {
       messages.Enqueue(string.Format("You dealt {0} damage to {1}!", attackResult[1], enemy));
-      stats.hitsDealt++;
+      stats.HitsDealt++;
       if (killEnemy) {
         messages.Enqueue(string.Format("You defeated {0}!", enemy));
-        stats.kills++;
+        stats.Kills++;
       }
     } else if (enemy != "")
       messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));

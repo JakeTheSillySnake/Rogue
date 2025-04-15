@@ -255,13 +255,13 @@ class Scene {
   public void DrawStats() {
     game.messages.Clear();
     game.messages.Enqueue(
-        string.Format("Level: {0}, treasure collected: {1}", game.stats.lvl, game.stats.treasure));
+        string.Format("Level: {0}, treasure collected: {1}", game.stats.Lvl, game.stats.Treasure));
     game.messages.Enqueue(string.Format("Used potions: {0}, scrolls: {1}, food: {2}",
-                                        game.stats.potions, game.stats.scrolls, game.stats.food));
+                                        game.stats.Potions, game.stats.Scrolls, game.stats.Food));
     game.messages.Enqueue(string.Format("Mobs killed: {0}, hits dealt: {1}, hits received: {2}",
-                                        game.stats.kills, game.stats.hitsDealt,
-                                        game.stats.hitsReceived));
-    game.messages.Enqueue(string.Format("Distance traveled: {0}", game.stats.distWalked));
+                                        game.stats.Kills, game.stats.HitsDealt,
+                                        game.stats.HitsReceived));
+    game.messages.Enqueue(string.Format("Distance traveled: {0}", game.stats.DistWalked));
   }
 
   public void ListInventory() {

@@ -1,15 +1,13 @@
 namespace rogue.Data;
 
 public class Statistics {
-  public int treasure = 0;
-  public int lvl = 1;
-  public int kills = 0;
-  public int food = 0;
-  public int potions = 0;
-  public int scrolls = 0;
-  public int hitsDealt = 0;
-  public int hitsReceived = 0;
-  public int distWalked = 0;
-  
-  public Statistics() {}
+    public int Treasure { get; set; } = 0;
+    public int Lvl { get; set; } = 1;
+    public int Kills { get; set; } = 0;
+    public int Food { get; set; } = 0;
+    public int Potions { get; set; } = 0;
+    public int Scrolls { get; set; } = 0;
+    public int HitsDealt { get; set; } = 0;
+    public int HitsReceived { get; set; } = 0;
+    public int DistWalked { get; set; } = 0;
 }

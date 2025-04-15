@@ -158,13 +158,13 @@ public class Inventory {
       weapons.Remove(w);
     } else if (i is Potion p) {
       potions.Remove(p);
-      stats.potions++;
+      stats.Potions++;
     } else if (i is Scroll s) {
       scrolls.Remove(s);
-      stats.scrolls++;
+      stats.Scrolls++;
     } else if (i is Food f) {
       food.Remove(f);
-      stats.food++;
+      stats.Food++;
     } else if (i is Key k) {
       keys.Remove(k);
     }
