@@ -1,5 +1,7 @@
 namespace rogue.Domain;
 
+using rogue.Domain.LevelMap;
+
 enum Enemies { ZOMBIE = 0, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
 
 public abstract class Enemy : Entity {
@@ -9,6 +11,38 @@ public abstract class Enemy : Entity {
   public Enemy() {}
 
   public abstract void Move(Level lvl);
+
+  public override bool CheckRight(Level lvl, int dist) {
+    if (lvl.field[y, x + dist] < (int)MapCellStates.EXIT ||
+        lvl.field[y, x + dist] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckLeft(Level lvl, int dist) {
+    if (lvl.field[y, x - dist] < (int)MapCellStates.EXIT ||
+        lvl.field[y, x - dist] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckUp(Level lvl, int dist) {
+    if (lvl.field[y - dist, x] < (int)MapCellStates.EXIT ||
+        lvl.field[y - dist, x] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
+
+  public override bool CheckDown(Level lvl, int dist) {
+    if (lvl.field[y + dist, x] < (int)MapCellStates.EXIT ||
+        lvl.field[y + dist, x] >= Level.itemCode)
+      return true;
+    else
+      return false;
+  }
 
   public virtual int Attack(Player p) {
     int chance = 0;
@@ -31,12 +65,13 @@ public abstract class Enemy : Entity {
       asleep = false;
       return 0;
     }
-    int dist = DistanceToTarget(lvl, p.x, p.y), damage = 0;
+    int dist = DistanceToTarget(p.x, p.y), damage = 0;
     if (dist <= 1) {
       follow = true;
       damage = Attack(p);
     }
     if ((dist <= enmity || follow) && dist > 0 && (x != p.x || y != p.y)) {
+      int initX = x, initY = y;
       // follow player
       follow = true;
       if (p.x > x && (p.y != y || p.x - 1 != x) && CheckRight(lvl, 1))
@@ -47,6 +82,10 @@ public abstract class Enemy : Entity {
         y++;
       if (p.y < y && (p.x != x || p.y + 1 != y) && CheckUp(lvl, 1))
         y--;
+      if (x == initX && y == initY) {
+        // ignore player if no path exists
+        follow = false;
+      }
     } else
       Move(lvl);
     return damage;
@@ -200,15 +239,16 @@ public class Ghost : Enemy {
     color = (int)Colors.WHITE;
     enmity = 1;
     InitCoords(x, y);
-    // improve later
-    LoadRoom(4, 1, 65, 17);
   }
 
   public override void Move(Level lvl) {
+    LoadRoom(lvl);
     if (_timer == 0) {
       Random rnd = new();
-      x = rnd.Next(_minX, _maxX + 1);
-      y = rnd.Next(_minY, _maxY + 1);
+      do {
+        x = rnd.Next(_minX, _maxX + 1);
+        y = rnd.Next(_minY, _maxY + 1);
+      } while (lvl.field[y, x] == (int)MapCellStates.EXIT);
       _timer = 6;
       // 20% chance to become invisible
       if (rnd.Next(1, 5) == 2 && !follow)
@@ -219,11 +259,16 @@ public class Ghost : Enemy {
       _timer--;
   }
 
-  public void LoadRoom(int startX, int startY, int endX, int endY) {
-    _minX = startX + 1;
-    _maxX = endX - 1;
-    _minY = startY + 1;
-    _maxY = endY - 1;
+  public void LoadRoom(Level lvl) {
+    int minX = x, maxX = x, minY = y, maxY = y;
+    while (CheckLeft(lvl, 1) || lvl.field[y, minX - 1] >= Level.enemyCode) minX--;
+    while (CheckRight(lvl, 1) || lvl.field[y, minX + 1] >= Level.enemyCode) maxX++;
+    while (CheckUp(lvl, 1) || lvl.field[minY - 1, x] >= Level.enemyCode) minY--;
+    while (CheckDown(lvl, 1) || lvl.field[maxY + 1, x] >= Level.enemyCode) maxY++;
+    _minX = minX;
+    _maxX = maxX;
+    _minY = minY;
+    _maxY = maxY;
   }
 }
 
@@ -242,8 +287,11 @@ public class Snake : Enemy {
   }
 
   public override void Move(Level lvl) {
-    if (_steps > 0 && lvl.field[y + _dirY, x] == (int)CellStates.EMPTY &&
-        lvl.field[y, x + _dirX] == (int)CellStates.EMPTY) {
+    if (_steps > 0 &&
+        (lvl.field[y + _dirY, x] <= (int)MapCellStates.EXIT ||
+         lvl.field[y + _dirY, x] >= Level.itemCode) &&
+        (lvl.field[y, x + _dirX] <= (int)MapCellStates.EXIT ||
+         lvl.field[y + _dirY, x] >= Level.itemCode)) {
       x += _dirX;
       y += _dirY;
       _steps--;
@@ -274,7 +322,7 @@ public class Mimic : Enemy {
 
   public override int Attack(Player p) {
     symbol = "m";
-    int chance = 0;
+    int chance;
     Random rnd = new();
     if (agl < p.agl)
       chance = 40;

@@ -1,15 +1,17 @@
 namespace rogue.Domain;
 
 using System.Collections.Generic;
+using rogue.Domain.LevelMap;
+using rogue.Data;
 
-enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE }
+enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE, KEY }
 
-enum Effects { Healing = 0, Strength, Agility }
+enum Effects { Health = 0, Strength, Agility }
 
 public class Item {
   public int value, x = 0, y = 0;
   public bool active = true;
-  public string symbol = "", name = "";
+  public string symbol = "", type = "", subtype = "", name = "";
 
   public Item() {}
 
@@ -21,54 +23,85 @@ public class Item {
 
 public class Weapon : Item {
   private readonly string[] _weapons = ["Knife", "Spear", "Sword", "Axe", "Mace"];
+  public bool equipped = false;
+  public int floorState = 0;
 
   public Weapon() {
     Random rnd = new();
     int idx = rnd.Next(_weapons.Length);
+    type = "Weapon";
+    subtype = "Strength";
     name = _weapons[idx];
-    value = Entity.valMid + idx;
+    value = Entity.valLow + idx;
     symbol = "!";
   }
 }
 
 public class Potion : Item {
-  public int type, effectLen = 10;
+  public int effectLen = 15;
+
+  private readonly int[] _vals = [Entity.valLow, Entity.valMid, Entity.valHigh];
+  private readonly string[] _power = ["Weak Potion", "Medium Potion", "Strong Potion"];
 
   public Potion() {
     Random rnd = new();
-    type = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
-    name = Enum.GetNames(typeof(Effects))[type];
-    value = Entity.valMid;
+    int idx = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
+    subtype = Enum.GetNames(typeof(Effects))[idx];
+
+    idx = rnd.Next(_vals.Length - 1);
+    value = _vals[idx];
+    type = _power[idx];
     symbol = "d";
   }
 }
 
 public class Scroll : Item {
-  public int type;
+  private readonly int[] _vals = [Entity.valLow, Entity.valMid, Entity.valHigh];
+  private readonly string[] _power = ["Weak Scroll", "Medium Scroll", "Strong Scroll"];
 
   public Scroll() {
     Random rnd = new();
-    type = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
-    name = Enum.GetNames(typeof(Effects))[type];
-    value = Entity.valMid;
+    int idx = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
+    subtype = Enum.GetNames(typeof(Effects))[idx];
+
+    idx = rnd.Next(_vals.Length - 1);
+    value = _vals[idx];
+    type = _power[idx];
     symbol = "=";
   }
 }
 
 public class Food : Item {
-  private readonly string[] _food = ["Apple", "Bread", "Steak"];
+  private readonly string[] _food = ["Apple", "Bread", "Chicken", "Cake", "Steak"];
 
   public Food() {
     Random rnd = new();
     int idx = rnd.Next(_food.Length);
+    type = "Food";
+    subtype = "Health";
     name = _food[idx];
-    value = Entity.valMid + (idx * 2);
+    value = Entity.valLow + idx;
     symbol = "+";
+  }
+}
+
+public class Key : Item {
+  public Key(int color) {
+    type = "Key";
+    if (color == (int)Colors.RED)
+      subtype = "Red";
+    else if (color == (int)Colors.BLUE)
+      subtype = "Blue";
+    else if (color == (int)Colors.GREEN)
+      subtype = "Green";
+    symbol = "k";
+    value = color;
   }
 }
 
 public class Treasure : Item {
   public Treasure() {
+    type = "Treasure";
     value = 0;
     symbol = "@";
   }
@@ -80,6 +113,7 @@ public class Inventory {
   public List<Potion> potions = [];
   public List<Scroll> scrolls = [];
   public List<Food> food = [];
+  public List<Key> keys = [];
 
   public Inventory() {}
 
@@ -113,8 +147,26 @@ public class Inventory {
         success = false;
       else
         food.Add(f);
+    } else if (i is Key k) {
+      keys.Add(k);
     }
     return success;
   }
-  public void DeletItem(int pos) {}
+
+  public void RemoveItem(Item i, Statistics stats) {
+    if (i is Weapon w) {
+      weapons.Remove(w);
+    } else if (i is Potion p) {
+      potions.Remove(p);
+      stats.potions++;
+    } else if (i is Scroll s) {
+      scrolls.Remove(s);
+      stats.scrolls++;
+    } else if (i is Food f) {
+      food.Remove(f);
+      stats.food++;
+    } else if (i is Key k) {
+      keys.Remove(k);
+    }
+  }
 }

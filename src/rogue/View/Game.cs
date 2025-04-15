@@ -1,35 +1,39 @@
 namespace rogue.View;
 
 using rogue.Domain;
+using rogue.Domain.LevelMap;
+using rogue.Data;
 
 class Game {
   public bool isOver = false, killEnemy = false;
-    
-  public Level lvl = new();
-  public Player player = new(34, 14);
+  private int _difficulty = 1;
+
+  public Level lvl;
+  public Player player;
+  public Statistics stats = new();
   public Queue<string> messages = new();
   public List<int> attackResult = [];
 
   public Game() {
-    // generate some enemies
-    lvl.SpawnEnemy((int)Enemies.ZOMBIE, 12, 5);
-    // lvl.SpawnEnemy((int)Enemies.SNAKE, 6, 10);
-    lvl.SpawnEnemy((int)Enemies.MIMIC, 57, 14);
-    // lvl.SpawnEnemy((int)Enemies.VAMPIRE, 30, 12);
-
-    // generate some items
-    lvl.SpawnItem((int)Items.POTION, 40, 14);
-    lvl.SpawnItem((int)Items.SCROLL, 50, 10);
-    lvl.SpawnItem((int)Items.FOOD, 6, 12);
-    lvl.SpawnItem((int)Items.WEAPON, 30, 12);
-    lvl.SpawnItem((int)Items.WEAPON, 20, 10);
+    lvl = new(_difficulty);
+    var playerPos = lvl.GetStartPos();
+    player = new(playerPos[1], playerPos[0]);
   }
 
   public string UpdateGame(int action) {
     messages.Clear();
+    // check for level end
+    List<int> endPos = lvl.GetEndPos();
+    if (endPos[0] == player.y && endPos[1] == player.x) {
+      if (player.lvl == 21)
+        isOver = true;
+      else
+        NextLevel();
+      return "";
+    }
     // damage to enemy
-    attackResult = player.Move(action, lvl);
-    killEnemy = lvl.ProcessDamage(attackResult);
+    attackResult = player.Move(action, lvl, stats);
+    killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
     ProcessItemMessages();
 
     // damage to player
@@ -38,22 +42,54 @@ class Game {
     return attacker;
   }
 
+  public void NextLevel() {
+    player.lvl = player.lvl == 21 ? 21 : player.lvl + 1;
+    stats.lvl = player.lvl;
+    // adjust difficulty
+    _difficulty = player.lvl / 2;
+    if ((float)player.hp / player.hp_max <= 0.5)
+      _difficulty = _difficulty > 1 ? _difficulty - 1 : 1;
+
+    lvl = new(_difficulty);
+    var playerPos = lvl.GetStartPos();
+    player.InitCoords(playerPos[1], playerPos[0]);
+    player.backpack.keys.Clear();
+  }
+
+  public bool UseItem(Item item) {
+    bool success = true;
+    if (item is Weapon && player.currWeapon.equipped)
+      success = lvl.DropWeapon(player);
+    if (item is Key k) {
+      success = player.UseKey(k, lvl);
+      if (success)
+        lvl.UpdateField();
+    } else if (success)
+      player.UseItem(item, stats);
+    return success;
+  }
+
+  public void RemoveCurrWeapon() {
+    player.RemoveCurrWeapon();
+  }
+
   public void ProcessItemMessages() {
     int pos = player.CollectItem(lvl, player.x, player.y);
     if (pos < 0)
       return;
     var i = lvl.items[pos];
+    if (i is Weapon w)
+      lvl.PickUpWeapon(w);
     string item = "";
-    if (i is Treasure)
+    if (i is Treasure) {
       item = string.Format("{0} Coins", i.value);
-    else if (i is Potion)
-      item = string.Format("Potion of {0}", i.name);
-    else if (i is Scroll)
-      item = string.Format("Scroll of {0}", i.name);
-    else if (i is Food)
+      stats.treasure += i.value;
+    } else if (i is Potion || i is Scroll)
+      item = string.Format("{0} of {1}", i.type, i.subtype);
+    else if (i is Food || i is Weapon)
       item = string.Format("{0}", i.name);
-    else if (i is Weapon)
-      item = string.Format("{0}", i.name);
+    else if (i is Key)
+      item = string.Format("{0} Key", i.subtype);
     messages.Enqueue(string.Format("You collected {0}!", item));
   }
 
@@ -82,8 +118,10 @@ class Game {
       }
       isOver = attack.Item1;
       lvl.UpdateField();
-      if (attack.Item2 > 0)
+      if (attack.Item2 > 0) {
         messages.Enqueue(string.Format("You were hit by {0}! (-{1} HP)", attacker, attack.Item2));
+        stats.hitsReceived++;
+      }
       if (isOver)
         return attacker;
     }
@@ -110,8 +148,11 @@ class Game {
     }
     if (enemy != "" && attackResult[1] != 0) {
       messages.Enqueue(string.Format("You dealt {0} damage to {1}!", attackResult[1], enemy));
-      if (killEnemy)
+      stats.hitsDealt++;
+      if (killEnemy) {
         messages.Enqueue(string.Format("You defeated {0}!", enemy));
+        stats.kills++;
+      }
     } else if (enemy != "")
       messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
     if (player.asleep)
