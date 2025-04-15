@@ -192,7 +192,7 @@ public class Player : Entity {
 
   public void UseItem(Item item, Statistics stats) {
     if (item.subtype == "Health" && item is Food)
-      hp += item.value;
+      hp = (hp + item.value > hp_max) ? hp_max : hp + item.value;
     else if (item.subtype == "Health") {
       hp_max += item.value;
       hp += item.value;

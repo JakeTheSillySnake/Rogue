@@ -75,7 +75,7 @@ class Scene {
     NCurses.Erase();
     Leaderboard leaderboard = new();
     var leadStats = leaderboard.LoadStats();
-    if (leadStats.Count >= 0) {
+    if (leadStats.Count > 0) {
       NCurses.AttributeSet(NCurses.ColorPair(5));
       NCurses.MoveAddString(
           1, 1,
