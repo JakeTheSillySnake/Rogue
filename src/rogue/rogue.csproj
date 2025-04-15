@@ -11,4 +11,8 @@
     <ProjectReference Include="..\dotnet-curses\dotnet-curses.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="saves\" />
+  </ItemGroup>
+
 </Project>
