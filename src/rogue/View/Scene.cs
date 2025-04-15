@@ -3,6 +3,7 @@ namespace rogue.View;
 using Mindmagma.Curses;
 using rogue.Domain.LevelMap;
 using rogue.Domain;
+using rogue.Data;
 
 enum StartActions { Continue = 1, New, Stats }
 
@@ -31,8 +32,14 @@ class Scene {
   public void Start() {
     int c = StartMenu();
     if (c == (int)StartActions.Continue) {
-      // load prev session from JSON
-      // game.LoadSession() maybe
+      // load prev session
+      if (!game.LoadSession()) {
+        NCurses.Erase();
+        NCurses.AttributeSet(NCurses.ColorPair(3));
+        NCurses.MoveAddString(5, 23, "Couldn't load session. Press any key to exit.");
+        NCurses.GetChar();
+        return;
+      }
     }
     if (c <= (int)StartActions.New) {
       // game loop
@@ -42,7 +49,8 @@ class Scene {
       }
     } else if (c == (int)StartActions.Stats) {
       // load leaderboard stats from JSON
-      // LoadStats()
+      LoadStats();
+      NCurses.GetChar();
     }
   }
 
@@ -61,6 +69,30 @@ class Scene {
     }
     while (c - '0' < 1 || c - '0' > game.messages.Count) c = NCurses.GetChar();
     return c - '0';
+  }
+
+  public void LoadStats() {
+    NCurses.Erase();
+    Leaderboard leaderboard = new();
+    var leadStats = leaderboard.LoadStats();
+    if (leadStats.Count >= 0) {
+      NCurses.AttributeSet(NCurses.ColorPair(5));
+      NCurses.MoveAddString(
+          1, 1,
+          "Treasure | LVL | Kills | Hits Dealt | Hits Received | Food | Potions | Scrolls | Distance");
+    } else {
+      NCurses.AttributeSet(NCurses.ColorPair(4));
+      NCurses.MoveAddString(5, 23, "Nothing to display. Press any key to exit.");
+    }
+    NCurses.AttributeSet(NCurses.ColorPair(2));
+    int count = 0;
+    foreach (var stat in leadStats) {
+      NCurses.MoveAddString(
+          1 + count, 1,
+          string.Format("{0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8}", stat.Treasure,
+                        stat.Lvl, stat.Kills, stat.HitsDealt, stat.HitsReceived, stat.Food,
+                        stat.Potions, stat.Scrolls, stat.DistWalked));
+    }
   }
 
   public void ProcessKeys(int action) {
@@ -329,11 +361,11 @@ class Scene {
     string msg;
     if (killer == "") {
       NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
-      msg = string.Format("You completed the dungeon! Total score: {0}. Press any key to exit",
+      msg = string.Format("You completed the dungeon! Total score: {0}. Press any key to exit.",
                           game.player.GetTreasure());
     } else {
       NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
-      msg = string.Format("You were defeated by {0}! Press any key to exit", killer);
+      msg = string.Format("You were defeated by {0}! Press any key to exit.", killer);
     }
     NCurses.MoveAddString(Level.ROWS + MSG_START + game.messages.Count, X_BORDER + 1, msg);
   }

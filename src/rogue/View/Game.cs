@@ -11,6 +11,7 @@ class Game {
   public Level lvl;
   public Player player;
   public Statistics stats = new();
+  public SessionData session = new();
   public Queue<string> messages = new();
   public List<int> attackResult = [];
 
@@ -18,6 +19,7 @@ class Game {
     lvl = new(_difficulty);
     var playerPos = lvl.GetStartPos();
     player = new(playerPos[1], playerPos[0]);
+    session.LoadData(lvl, player, stats);
   }
 
   public string UpdateGame(int action) {
@@ -54,6 +56,7 @@ class Game {
     var playerPos = lvl.GetStartPos();
     player.InitCoords(playerPos[1], playerPos[0]);
     player.backpack.keys.Clear();
+    session.LoadData(lvl, player, stats);
   }
 
   public bool UseItem(Item item) {
@@ -157,5 +160,19 @@ class Game {
       messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
     if (player.asleep)
       messages.Enqueue("You were stunned by Snake-Wizard!");
+  }
+
+  public bool LoadSession() {
+    if (!session.GetSessionData())
+      return false;
+    lvl.field = session.field;
+    lvl.enemies = session.enemies;
+    lvl.items = session.items;
+    lvl.doors = session.doors;
+    lvl.rooms = session.rooms;
+    lvl.corridors = session.corridors;
+    player = session.player;
+    stats = session.stats;
+    return true;
   }
 }
