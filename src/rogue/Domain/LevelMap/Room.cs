@@ -23,7 +23,7 @@
       centerPosX = (startPosX + endPosX) / 2;
     }
     public bool ContainsTarget(int x, int y) {
-      if (x >= startPosX && x <= endPosX && y >= startPosY && y <= endPosY)
+      if (x > startPosX && x < endPosX && y > startPosY && y < endPosY)
         return true;
       else return false;
     }
