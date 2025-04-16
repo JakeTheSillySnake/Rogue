@@ -62,11 +62,9 @@ public class Render {
   }
 
   public bool InLineOfSight(int sourceX, int sourceY, int targetX, int targetY) {
+    int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
     int x = sourceX, y = sourceY;
     int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
-    int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
-    int dist = (int)Math.Sqrt(Math.Pow(deltaX, 2) + Math.Pow(deltaY, 2));
-    int decisionParam = 2 * deltaY - deltaX;
     if (sourceX == targetX)
       while (y != targetY && fieldMask[y, x] != wall && fieldMask[y, x] != busy)
         y = y > targetY ? y - 1 : y + 1;
@@ -74,6 +72,22 @@ public class Render {
       while (x != targetX && fieldMask[y, x] != wall && fieldMask[y, x] != busy)
         x = x > targetX ? x - 1 : x + 1;
     // bresenham’s algorithm
+    bool ok;
+    if (deltaX > deltaY)
+      ok = BresenhamDeltaX(sourceX, sourceY, targetX, targetY);
+    else
+      ok = BresenhamDeltaY(sourceX, sourceY, targetX, targetY);
+    int dist = (int)Math.Sqrt(Math.Pow(deltaX, 2) + Math.Pow(deltaY, 2));
+    if (fieldMask[y, x] == wall || fieldMask[y, x] == busy || !ok || dist > intensity)
+      return false;
+    return true;
+  }
+
+  public bool BresenhamDeltaX(int sourceX, int sourceY, int targetX, int targetY) {
+    int x = sourceX, y = sourceY;
+    int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
+    int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
+    int decisionParam = 2 * deltaY - deltaX;
     while (x != targetX && y != targetY && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
       if (decisionParam < 0) {
         decisionParam += 2 * deltaY;
@@ -83,7 +97,26 @@ public class Render {
       }
       x = x > targetX ? x - 1 : x + 1;
     }
-    if (fieldMask[y, x] == wall || fieldMask[y, x] == busy || dist >= intensity)
+    if (fieldMask[y, x] == wall || fieldMask[y, x] == busy)
+      return false;
+    return true;
+  }
+
+  public bool BresenhamDeltaY(int sourceX, int sourceY, int targetX, int targetY) {
+    int x = sourceX, y = sourceY;
+    int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
+    int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
+    int decisionParam = 2 * deltaX - deltaY;
+    while (x != targetX && y != targetY && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
+      if (decisionParam < 0) {
+        decisionParam += 2 * deltaX;
+      } else {
+        x = x > targetX ? x - 1 : x + 1;
+        decisionParam += 2 * (deltaX - deltaY);
+      }
+      y = y > targetY ? y - 1 : y + 1;
+    }
+    if (fieldMask[y, x] == wall || fieldMask[y, x] == busy)
       return false;
     return true;
   }
