@@ -1,6 +1,6 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class LevelFactory {
-    public (int[,], List<Room>, List<(Route, int)>) createLevelMap(int sizeY, int sizeX, int difficulty) {
+    public (int[,], List<Room>, List<Corridor>) createLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
         for (int x = 0; x < sizeX; x++)
@@ -11,13 +11,13 @@
       List<(Room, Room, int)> roomMST = GenerateMST(map, random, rooms);
       List<int> keyPositions = GenerateDOOM(map, random, rooms, roomMST);
       List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
-      List<(Route, int)> routes = GenerateCorridors(map, random, doorMST);
+      List<Corridor> corridors = GenerateCorridors(map, random, doorMST);
       List<(int, int)> enemyPositionList = GenerateEnemySpawns(map, random, rooms, difficulty);
       List<(int, int)> itemPositionList = GenerateItemSpawns(map, random, rooms, difficulty);
-      AssembleMap(map, random, rooms, routes, doorMST, keyPositions, enemyPositionList,
+      AssembleMap(map, random, rooms, corridors, doorMST, keyPositions, enemyPositionList,
                   itemPositionList);
 
-      return (map, rooms, routes);
+      return (map, rooms, corridors);
     }
 
     List<Room> GenerateRooms(int[,] map, Random random) {
@@ -104,17 +104,19 @@
       return doorList;
     }
 
-    private List<(Route, int)> GenerateCorridors(int[,] map, Random random,
+    private List<Corridor> GenerateCorridors(int[,] map, Random random,
                                                  List<(Door, Door, int)> doorMST) {
-      List<(Route, int)> routes = new List<(Route, int)>();
+      List<Corridor> corridors = new List<Corridor>();
 
       foreach (var routePointPair in doorMST) {
-        routes.Add((new Route(routePointPair.Item1.posY, routePointPair.Item2.posY,
-                              routePointPair.Item1.posX, routePointPair.Item2.posX),
-                    routePointPair.Item3));
+        corridors.Add(
+            new Corridor(
+                new Route(routePointPair.Item1.posY, routePointPair.Item2.posY,
+                routePointPair.Item1.posX, routePointPair.Item2.posX),
+                routePointPair.Item3));
       }
 
-      return routes;
+      return corridors;
     }
 
     private List<int> GenerateDOOM(int[,] map, Random random, List<Room> rooms,
@@ -201,13 +203,13 @@
       }
       return itemSpawnList;
     }
-    private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<(Route, int)> routes,
+    private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<Corridor> corridors,
                              List<(Door, Door, int)> doorMST, List<int> keyPositions,
                              List<(int, int)> enemyPositionList,
                              List<(int, int)> itemPositionList) {
       PlaceRoomsOnMap(map, rooms);
 
-      PlaceCorridorsOnMap(map, random, routes);
+      PlaceCorridorsOnMap(map, random, corridors);
 
       PlaceDoorsOnMap(map, doorMST);
 
@@ -235,17 +237,17 @@
       }
     }
 
-    private void PlaceCorridorsOnMap(int[,] map, Random random, List<(Route, int)> routes) {
-      foreach ((Route, int)route in routes) {
-        foreach ((int posY, int posX) in route.Item1.tiles) {
+    private void PlaceCorridorsOnMap(int[,] map, Random random, List<Corridor> corridors) {
+      foreach (Corridor corridor in corridors) {
+        foreach (Tile tile in corridor.route.tiles) {
           //if (map[posY, posX] == (int)MapCellStates.BUSY)
-            map[posY, posX] = (int)MapCellStates.CORRIDOR;
+            map[tile.PosY, tile.PosX] = (int)MapCellStates.CORRIDOR;
         }
-        if (route.Item2 != 0) {
-          int tileIndexToPick = random.Next(route.Item1.tiles.Count);
-          int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
-          int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
-          map[doorPosY, doorPosX] = (int)MapCellStates.DOOR + route.Item2;
+        if (corridor.lockCode != 0) {
+          int tileIndexToPick = random.Next(corridor.route.tiles.Count);
+          int doorPosY = corridor.route.tiles[tileIndexToPick].PosY;
+          int doorPosX = corridor.route.tiles[tileIndexToPick].PosX;
+          map[doorPosY, doorPosX] = (int)MapCellStates.DOOR + corridor.lockCode;
         }
       }
     }

@@ -19,7 +19,7 @@ class Game {
     lvl = new(_difficulty);
     var playerPos = lvl.GetStartPos();
     player = new(playerPos[1], playerPos[0]);
-    session.LoadData(lvl, player, stats);
+    session = SessionDataSaver.LoadData(lvl, player, stats);
   }
 
   public string UpdateGame(int action) {
@@ -56,7 +56,7 @@ class Game {
     var playerPos = lvl.GetStartPos();
     player.InitCoords(playerPos[1], playerPos[0]);
     player.backpack.keys.Clear();
-    session.LoadData(lvl, player, stats);
+    session = SessionDataSaver.LoadData(lvl, player, stats);
   }
 
   public bool UseItem(Item item) {
@@ -163,16 +163,17 @@ class Game {
   }
 
   public bool LoadSession() {
-    if (!session.GetSessionData())
+    if (SessionDataSaver.GetSessionData() == null)
       return false;
-    lvl.field = session.field;
-    lvl.enemies = session.enemies;
-    lvl.items = session.items;
-    lvl.doors = session.doors;
-    lvl.rooms = session.rooms;
-    lvl.corridors = session.corridors;
-    player = session.player;
-    stats = session.stats;
+    session = SessionDataSaver.GetSessionData()!;
+    lvl.field = session.Field;
+    lvl.enemies = session.Enemies;
+    lvl.items = session.Items;
+    lvl.doors = session.Doors;
+    lvl.rooms = session.Rooms;
+    lvl.corridors = session.Corridors;
+    player = session.Player;
+    stats = session.Stats;
     return true;
   }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using rogue.Domain.LevelMap;
+using System;
 using System.Collections.Generic;
 
 namespace rogue1980.domain
@@ -267,15 +268,15 @@ namespace rogue1980.domain
         {
             foreach ((Route, int) route in routes)
             {
-                foreach ((int posY, int posX) in route.Item1.tiles)
+                foreach (Tile tile in route.Item1.Tiles)
                 {
-                    map[posY, posX] = (int)MapCellStates.CORRIDOR;
+                    map[tile.PosY, tile.PosX] = (int)MapCellStates.CORRIDOR;
                 }
                 if (route.Item2 != 0)
                 {
-                    int tileIndexToPick = random.Next(route.Item1.tiles.Count);
-                    int doorPosY = route.Item1.tiles[tileIndexToPick].posY;
-                    int doorPosX = route.Item1.tiles[tileIndexToPick].posX;
+                    int tileIndexToPick = random.Next(route.Item1.Tiles.Count);
+                    int doorPosY = route.Item1.Tiles[tileIndexToPick].PosY;
+                    int doorPosX = route.Item1.Tiles[tileIndexToPick].PosX;
                     map[doorPosY, doorPosX] = (int)MapCellStates.KEY_DOOR + route.Item2;
                 }
             }

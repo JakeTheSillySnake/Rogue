@@ -1,24 +1,24 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class Route {
-    public List<(int posY, int posX)> tiles { get; private set; }
+    public List<Tile> tiles { get; private set; }
     public bool visited = false;
     public Route(int posYA, int posYB, int posXA, int posXB) {
-      tiles = [(posYA, posXA)];
-      List<(double distance, int posY, int posX)> bestTile = [];
+      tiles = [new Tile(posYA, posXA)];
+      List<(double distance, int PosY, int PosX)> bestTile = [];
 
-      while (GetDistanceCoords(tiles.Last().posY, posYB, tiles.Last().posX, posXB) >= 1) {
-        bestTile.Add((GetDistanceCoords(tiles.Last().posY - 1, posYB, tiles.Last().posX, posXB),
-                      tiles.Last().posY - 1, tiles.Last().posX));
-        bestTile.Add((GetDistanceCoords(tiles.Last().posY + 1, posYB, tiles.Last().posX, posXB),
-                      tiles.Last().posY + 1, tiles.Last().posX));
-        bestTile.Add((GetDistanceCoords(tiles.Last().posY, posYB, tiles.Last().posX - 1, posXB),
-                      tiles.Last().posY, tiles.Last().posX - 1));
-        bestTile.Add((GetDistanceCoords(tiles.Last().posY, posYB, tiles.Last().posX + 1, posXB),
-                      tiles.Last().posY, tiles.Last().posX + 1));
+      while (GetDistanceCoords(tiles.Last().PosY, posYB, tiles.Last().PosX, posXB) >= 1) {
+        bestTile.Add((GetDistanceCoords(tiles.Last().PosY - 1, posYB, tiles.Last().PosX, posXB),
+                      tiles.Last().PosY - 1, tiles.Last().PosX));
+        bestTile.Add((GetDistanceCoords(tiles.Last().PosY + 1, posYB, tiles.Last().PosX, posXB),
+                      tiles.Last().PosY + 1, tiles.Last().PosX));
+        bestTile.Add((GetDistanceCoords(tiles.Last().PosY, posYB, tiles.Last().PosX - 1, posXB),
+                      tiles.Last().PosY, tiles.Last().PosX - 1));
+        bestTile.Add((GetDistanceCoords(tiles.Last().PosY, posYB, tiles.Last().PosX + 1, posXB),
+                      tiles.Last().PosY, tiles.Last().PosX + 1));
 
         bestTile.Sort();
 
-        tiles.Add((bestTile.First().posY, bestTile.First().posX));
+        tiles.Add(new Tile(bestTile.First().PosY, bestTile.First().PosX));
       }
     }
 
@@ -27,8 +27,8 @@
     }
 
     public bool ContainsTarget(int x, int y) {
-      foreach (var (posY, posX) in tiles) {
-        if (posX == x && posY == y)
+      foreach (Tile tile in tiles) {
+        if (tile.PosX == x && tile.PosY == y)
           return true;
       }
       return false;

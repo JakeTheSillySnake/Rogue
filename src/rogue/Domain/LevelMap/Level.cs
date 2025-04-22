@@ -9,7 +9,7 @@ public class Level {
   public List<Item> items = [];
   public List<Door> doors = [];
   public List<Room> rooms = [];
-  public List<(Route, int)> corridors = [];
+  public List<Corridor> corridors = [];
 
   public Level(int difficulty) {
     var factory = new LevelFactory();
