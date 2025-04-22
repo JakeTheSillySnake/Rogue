@@ -9,11 +9,22 @@ enum Items { WEAPON = 0, POTION, SCROLL, FOOD, TREASURE, KEY }
 enum Effects { Health = 0, Strength, Agility }
 
 public class Item {
-  public int value, x = 0, y = 0;
-  public bool active = true;
-  public string symbol = "", type = "", subtype = "", name = "";
+  public int value { get; set; }
+  public int x { get; set; }
+  public int y { get; set; }
+  public bool active { get; set; }
+  public string symbol { get; set; }
+  public string type { get; set; }
+  public string subtype { get; set; }
+  public string name { get; set; }
 
-  public Item() {}
+  public Item() {
+    active = true;
+    symbol = "";
+    type = "";
+    subtype = "";
+    name = "";
+  }
 
   public void Spawn(int x, int y) {
     this.x = x;
@@ -23,10 +34,13 @@ public class Item {
 
 public class Weapon : Item {
   private readonly string[] _weapons = ["Knife", "Spear", "Sword", "Axe", "Mace"];
-  public bool equipped = false;
-  public int floorState = 0;
+  public bool equipped { get; set; }
+  public int floorState { get; set; }
 
   public Weapon() {
+    active = true;
+    equipped = false;
+    floorState = 0;
     Random rnd = new();
     int idx = rnd.Next(_weapons.Length);
     type = "Weapon";
@@ -38,12 +52,14 @@ public class Weapon : Item {
 }
 
 public class Potion : Item {
-  public int effectLen = 15;
+  public int effectLen { get; set; }
 
   private readonly int[] _vals = [Entity.valLow, Entity.valMid, Entity.valHigh];
   private readonly string[] _power = ["Weak Potion", "Medium Potion", "Strong Potion"];
 
   public Potion() {
+    active = true;
+    effectLen = 15;
     Random rnd = new();
     int idx = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
     subtype = Enum.GetNames(typeof(Effects))[idx];
@@ -60,6 +76,7 @@ public class Scroll : Item {
   private readonly string[] _power = ["Weak Scroll", "Medium Scroll", "Strong Scroll"];
 
   public Scroll() {
+    active = true;
     Random rnd = new();
     int idx = rnd.Next(Enum.GetNames(typeof(Effects)).Length);
     subtype = Enum.GetNames(typeof(Effects))[idx];
@@ -75,6 +92,7 @@ public class Food : Item {
   private readonly string[] _food = ["Apple", "Bread", "Chicken", "Cake", "Steak"];
 
   public Food() {
+    active = true;
     Random rnd = new();
     int idx = rnd.Next(_food.Length);
     type = "Food";
@@ -87,6 +105,7 @@ public class Food : Item {
 
 public class Key : Item {
   public Key(int color) {
+    active = true;
     type = "Key";
     if (color == (int)Colors.RED)
       subtype = "Red";
@@ -101,6 +120,7 @@ public class Key : Item {
 
 public class Treasure : Item {
   public Treasure() {
+    active = true;
     type = "Treasure";
     value = 0;
     symbol = "@";

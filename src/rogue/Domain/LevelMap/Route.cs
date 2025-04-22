@@ -1,8 +1,9 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class Route {
     public List<(int posY, int posX)> tiles { get; private set; }
-    public bool visited = false;
+    public bool visited { get; set; }
     public Route(int posYA, int posYB, int posXA, int posXB) {
+      visited = false;
       tiles = [(posYA, posXA)];
       List<(double distance, int posY, int posX)> bestTile = [];
 
