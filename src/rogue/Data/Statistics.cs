@@ -2,7 +2,7 @@ namespace rogue.Data;
 
 public class Statistics {
   public int Treasure { get; set; } = 0;
-  public int Lvl { get; set; } = 1;
+  public int Lvl { get; set; } = 0;
   public int Kills { get; set; } = 0;
   public int Food { get; set; } = 0;
   public int Potions { get; set; } = 0;
