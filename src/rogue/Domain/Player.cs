@@ -5,11 +5,19 @@ using rogue.Domain.LevelMap;
 using rogue.Data;
 
 public class Entity {
-  public int x, y, hp, hp_max, str, agl, color;
-  public string symbol = "";
+  public int x { get; set; }
+  public int y { get; set; }
+  public int hp { get; set; }
+  public int hp_max { get; set; }
+  public int str { get; set; }
+  public int agl { get; set; }
+  public int color { get; set; }
+  public string symbol { get; set; }
   public static int valLow = 3, valMid = 5, valHigh = 10;
 
-  public Entity() {}
+  public Entity() {
+    symbol = "";
+  }
 
   public void InitCoords(int x, int y) {
     this.x = x;
@@ -61,15 +69,19 @@ public class Entity {
 }
 
 public class Player : Entity {
-  public int lvl = 1;
-  public bool asleep = false;
-  public string effect = "";
-  public int effCount = 0;
+  public int lvl { get; set; }
+  public bool asleep { get; set; }
+  public string effect { get; set; }
+  public int effCount { get; set; }
   public Inventory backpack = new();
   public Weapon currWeapon = new();
   public Potion currPotion = new();
 
   public Player(int x, int y) {
+    lvl = 1;
+    asleep = false;
+    effect = "";
+    effCount = 0;
     symbol = "p";
     hp = 2 * valHigh;
     hp_max = 2 * valHigh;

@@ -5,8 +5,10 @@ using rogue.Domain.LevelMap;
 enum Enemies { ZOMBIE = 0, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
 
 public abstract class Enemy : Entity {
-  public int enmity;
-  public bool asleep = false, follow = false, dead = false;
+  public int hostility { get; set; }
+  public bool asleep { get; set; }
+  public bool follow { get; set; }
+  public bool dead { get; set; }
 
   public Enemy() {}
 
@@ -70,7 +72,7 @@ public abstract class Enemy : Entity {
       follow = true;
       damage = Attack(p);
     }
-    if ((dist <= enmity || follow) && dist > 0 && (x != p.x || y != p.y)) {
+    if ((dist <= hostility || follow) && dist > 0 && (x != p.x || y != p.y)) {
       int initX = x, initY = y;
       // follow player
       follow = true;
@@ -102,21 +104,25 @@ public abstract class Enemy : Entity {
 
   public int GenTreasure() {
     Random rnd = new();
-    return rnd.Next(hp_max, str + agl + enmity + hp_max);
+    return rnd.Next(hp_max, str + agl + hostility + hp_max);
   }
 }
 
 public class Zombie : Enemy {
-  private int _dirX = 1;
+  private int _dirX { get; set; }
 
   public Zombie(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
+    _dirX = 1;
     symbol = "z";
     hp = 4 * valHigh;
     hp_max = 4 * valHigh;
     str = valMid;
     agl = valLow;
     color = (int)Colors.GREEN;
-    enmity = 2;
+    hostility = 2;
     InitCoords(x, y);
   }
 
@@ -131,18 +137,25 @@ public class Zombie : Enemy {
 }
 
 public class Vampire : Enemy {
-  private int _dirX = 0, _dirY = 1;
-  private bool _firstMove = true;
+  private int _dirX { get; set; }
+  private int _dirY { get; set; }
+  private bool _firstMove { get; set; }
   // first player attack is miss
 
   public Vampire(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
+    _dirX = 0;
+    _dirY = 1;
+    _firstMove = true;
     symbol = "v";
     hp = 4 * valHigh;
     hp_max = 4 * valHigh;
     str = valMid;
     agl = valHigh;
     color = (int)Colors.RED;
-    enmity = 3;
+    hostility = 3;
     InitCoords(x, y);
   }
 
@@ -177,17 +190,22 @@ public class Vampire : Enemy {
 }
 
 public class Ogre : Enemy {
-  private int _dir = 0;
-  private bool _counterAttack = false;
+  private int _dir { get; set; }
+  private bool _counterAttack { get; set; }
 
   public Ogre(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
+    _dir = 0;
+    _counterAttack = false;
     symbol = "o";
     hp = 4 * valHigh;
     hp_max = 4 * valHigh;
     str = valHigh;
     agl = valLow;
     color = (int)Colors.YELLOW;
-    enmity = 2;
+    hostility = 2;
     InitCoords(x, y);
   }
 
@@ -228,16 +246,24 @@ public class Ogre : Enemy {
 }
 
 public class Ghost : Enemy {
-  private int _timer = 5, _minX, _maxX, _minY, _maxY;
+  private int _timer { get; set; }
+  private int _minX { get; set; }
+  private int _maxX { get; set; }
+  private int _minY { get; set; }
+  private int _maxY { get; set; }
 
   public Ghost(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
+    _timer = 5;
     symbol = "g";
     hp = 4 * valLow;
     hp_max = 4 * valLow;
     str = valLow;
     agl = valHigh;
     color = (int)Colors.WHITE;
-    enmity = 1;
+    hostility = 1;
     InitCoords(x, y);
   }
 
@@ -273,16 +299,24 @@ public class Ghost : Enemy {
 }
 
 public class Snake : Enemy {
-  private int _dirX = 1, _dirY = -1, _steps = 3;
+  private int _dirX { get; set; }
+  private int _dirY { get; set; }
+  private int _steps { get; set; }
 
   public Snake(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
+    _dirX = 1;
+    _dirY = -1;
+    _steps = 3;
     symbol = "s";
     hp = 4 * valMid;
     hp_max = 4 * valMid;
     str = valMid;
     agl = valHigh;
     color = (int)Colors.WHITE;
-    enmity = 3;
+    hostility = 3;
     InitCoords(x, y);
   }
 
@@ -307,6 +341,9 @@ public class Snake : Enemy {
 public class Mimic : Enemy {
   private readonly string[] _items = ["!", "=", "+", "d"];
   public Mimic(int x, int y) {
+    follow = false;
+    dead = false;
+    asleep = false;
     Random rnd = new();
     symbol = _items[rnd.Next(_items.Length)];
     hp = 4 * valHigh;
@@ -314,7 +351,7 @@ public class Mimic : Enemy {
     str = valLow;
     agl = valHigh;
     color = (int)Colors.WHITE;
-    enmity = 1;
+    hostility = 1;
     InitCoords(x, y);
   }
 

@@ -6,11 +6,12 @@
     public int endPosY { get; private set; }
     public int centerPosX { get; private set; }
     public int centerPosY { get; private set; }
-    public bool visited = false;
+    public bool visited { get; set; }
 
     public Room() : this(new Random(), 0, 0, 9, 9) {}
     public Room(Random random, int startLimitPosY, int startLimitPosX, int endLimitPosY,
                 int endLimitPosX) {
+      visited = false;
       centerPosY = (startLimitPosY + endLimitPosY) / 2;
       centerPosX = (startLimitPosX + endLimitPosX) / 2;
 
