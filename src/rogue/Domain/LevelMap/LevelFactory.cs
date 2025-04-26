@@ -1,6 +1,6 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class LevelFactory {
-    public (int[,], List<Room>, List<Corridor>) createLevelMap(int sizeY, int sizeX, int difficulty) {
+    public (int[,], List<Room>, List<Corridor>) CreateLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
         for (int x = 0; x < sizeX; x++)

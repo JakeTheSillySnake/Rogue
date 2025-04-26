@@ -3,7 +3,7 @@ namespace rogue.Data;
 using rogue.Domain;
 using rogue.Domain.LevelMap;
 using System.Collections.Generic;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 public static class SessionDataSaver {
 
@@ -45,7 +45,7 @@ public static class SessionDataSaver {
             Stats = new();
         }
     }
-    public static SessionData LoadData(Level lvl, Player p, Statistics s) {
+  public static SessionData LoadData(Level lvl, Player p, Statistics s) {
     SessionData sessionData = new SessionData();
     sessionData.Field = lvl.field;
     sessionData.Enemies = lvl.enemies;
@@ -61,14 +61,13 @@ public static class SessionDataSaver {
   }
 
   public static void SaveSessionData(SessionDataJSON sessionDataJSON) {
-    var options = new JsonSerializerOptions
-      {
-        WriteIndented = true
-      };
     string savePath = FindCorrectFilePath();
-    string json = JsonSerializer.Serialize(sessionDataJSON, options);
+    string json = JsonConvert.SerializeObject(sessionDataJSON, new JsonSerializerSettings
+    {
+        TypeNameHandling = TypeNameHandling.All
+    });
 
-    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
     File.WriteAllText(savePath, json);
   }
 
@@ -80,8 +79,11 @@ public static class SessionDataSaver {
     if (File.Exists(savePath))
     {
       string json = File.ReadAllText(savePath);
-      sessionDataJSON = JsonSerializer.Deserialize<SessionDataJSON>(json);
-      sessionData = ConvertSessionData(sessionDataJSON);
+      sessionDataJSON = JsonConvert.DeserializeObject<SessionDataJSON>(json, new JsonSerializerSettings
+      {
+          TypeNameHandling = TypeNameHandling.All
+      });
+            sessionData = ConvertSessionData(sessionDataJSON);
     } else
     {
       sessionData = null;

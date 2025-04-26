@@ -13,7 +13,7 @@ public class Level {
 
   public Level(int difficulty) {
     var factory = new LevelFactory();
-    var result = factory.createLevelMap(ROWS, COLS, difficulty);
+    var result = factory.CreateLevelMap(ROWS, COLS, difficulty);
     field = result.Item1;
     rooms = result.Item2;
     corridors = result.Item3;
