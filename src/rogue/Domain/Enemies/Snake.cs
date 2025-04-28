@@ -11,7 +11,7 @@ public class Snake : Enemy {
     Symbol = "s";
     Hp = 4 * valMid;
     Hp_max = 4 * valMid;
-    Str= valMid;
+    Str = valMid;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
     Hostility = 3;

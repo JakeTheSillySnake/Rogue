@@ -12,7 +12,7 @@ public class Vampire : Enemy {
     Symbol = "v";
     Hp = 4 * valHigh;
     Hp_max = 4 * valHigh;
-    Str= valMid;
+    Str = valMid;
     Agl = valHigh;
     Color = (int)Colors.RED;
     Hostility = 3;

@@ -9,7 +9,7 @@ public class Mimic : Enemy {
     Symbol = _items[rnd.Next(_items.Length)];
     Hp = 4 * valHigh;
     Hp_max = 4 * valHigh;
-    Str= valLow;
+    Str = valLow;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
     Hostility = 1;

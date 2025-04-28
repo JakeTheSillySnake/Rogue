@@ -43,7 +43,7 @@ class Game {
     string attacker = res.Item1;
     isOver = res.Item2;
     msg.ProcessAttackMessages(lvl, player, stats, attackResult, killEnemy);
-    if (isOver) 
+    if (isOver)
       SaveStats();
     return attacker;
   }

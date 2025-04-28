@@ -48,8 +48,7 @@ public static class GameOverStatSaver {
   }
 
   public static string FindCorrectFilePath() {
-    string projectRoot =
-        Path.GetFullPath("../");
+    string projectRoot = Path.GetFullPath("../");
     string path = Path.Combine(projectRoot, "saves", "GameoverData.json");
     return path;
   }

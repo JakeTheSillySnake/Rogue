@@ -18,8 +18,7 @@
 
         bestTile.Sort();
 
-        while (map[bestTile[0].posY, bestTile[0].posX] != (int)MapCellStates.BUSY)
-        {
+        while (map[bestTile[0].posY, bestTile[0].posX] != (int)MapCellStates.BUSY) {
           bestTile.Remove(bestTile[0]);
         }
 

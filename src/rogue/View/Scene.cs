@@ -256,7 +256,8 @@ class Scene {
 
   public void DrawPlayer() {
     NCurses.AttributeSet(NCurses.ColorPair(game.player.Color) | CursesAttribute.BOLD);
-    NCurses.MoveAddString(game.player.PosY + Y_BORDER, game.player.PosX + X_BORDER, game.player.Symbol);
+    NCurses.MoveAddString(game.player.PosY + Y_BORDER, game.player.PosX + X_BORDER,
+                          game.player.Symbol);
   }
 
   public void DrawEnemies() {

@@ -2,7 +2,7 @@ namespace rogue.Domain.Items;
 
 public class Scroll : Item {
   private readonly int[] _vals = [Entity.valLow, Entity.valMid, Entity.valHigh];
-  private readonly string[] _power = ["Weak Scroll", "Medium Scroll", "Strong Scroll"];
+  private readonly string[] _power = ["Weak Scroll", "Medium Scroll", "Powerful Scroll"];
 
   public Scroll() {
     Random rnd = new();
