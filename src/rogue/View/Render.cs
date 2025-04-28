@@ -50,10 +50,10 @@ public class Render {
 
   public void RenderCorridors(Level lvl, Player p) {
     foreach (var cor in lvl.corridors) {
-      if (cor.Item1.ContainsTarget(p.PosX, p.PosY))
-        cor.Item1.visited = true;
-      if (!cor.Item1.visited) {
-        foreach (var tile in cor.Item1.Tiles) {
+      if (cor.route.ContainsTarget(p.PosX, p.PosY))
+        cor.route.visited = true;
+      if (!cor.route.visited) {
+        foreach (var tile in cor.route.Tiles) {
           if (!InLineOfSight(p.PosX, p.PosY, tile.PosX, tile.PosY))
             fieldMask[tile.PosY, tile.PosX] = (int)MapCellStates.BUSY;
         }
