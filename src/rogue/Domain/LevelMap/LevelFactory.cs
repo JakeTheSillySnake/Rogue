@@ -2,7 +2,7 @@
 
 {
   public class LevelFactory {
-    public (int[,], List<Room>, List<(Route, int)>)
+    public (int[,], List<Room>, List<Corridor>)
         CreateLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
@@ -14,7 +14,7 @@
       List<(Room, Room, int)> roomMST = GenerateMST(map, random, rooms);
       List<int> keyPositions = GenerateDOOM(map, random, rooms, roomMST);
       List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
-      List<(Route, int)> routes = GenerateCorridors(map, random, doorMST);
+      List<Corridor> routes = GenerateCorridors(map, random, doorMST);
       List<(int, int)> enemyPositionList = GenerateEnemySpawns(map, random, rooms, difficulty);
       List<(int, int)> itemPositionList = GenerateItemSpawns(map, random, rooms, difficulty);
       AssembleMap(map, random, rooms, routes, doorMST, keyPositions, enemyPositionList,
@@ -107,12 +107,12 @@
       return doorList;
     }
 
-    private List<(Route, int)> GenerateCorridors(int[,] map, Random random,
+    private List<Corridor> GenerateCorridors(int[,] map, Random random,
                                                  List<(Door, Door, int)> doorMST) {
-      List<(Route, int)> routes = new List<(Route, int)>();
+      List<Corridor> routes = new List<Corridor>();
 
       foreach (var routePointPair in doorMST) {
-        routes.Add((new Route(routePointPair.Item1.posY, routePointPair.Item2.posY,
+        routes.Add(new Corridor(new Route(routePointPair.Item1.posY, routePointPair.Item2.posY,
                               routePointPair.Item1.posX, routePointPair.Item2.posX),
                     routePointPair.Item3));
       }
@@ -204,7 +204,7 @@
       }
       return itemSpawnList;
     }
-    private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<(Route, int)> routes,
+    private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<Corridor> routes,
                              List<(Door, Door, int)> doorMST, List<int> keyPositions,
                              List<(int, int)> enemyPositionList,
                              List<(int, int)> itemPositionList) {
@@ -238,16 +238,16 @@
       }
     }
 
-    private void PlaceCorridorsOnMap(int[,] map, Random random, List<(Route, int)> routes) {
-      foreach ((Route, int)route in routes) {
-        foreach (Tile tile in route.Item1.Tiles) {
+    private void PlaceCorridorsOnMap(int[,] map, Random random, List<Corridor> routes) {
+      foreach (Corridor corridor in routes) {
+        foreach (Tile tile in corridor.route.Tiles) {
           map[tile.PosY, tile.PosX] = (int)MapCellStates.CORRIDOR;
         }
-        if (route.Item2 != 0) {
-          int tileIndexToPick = random.Next(route.Item1.Tiles.Count);
-          int doorPosY = route.Item1.Tiles[tileIndexToPick].PosY;
-          int doorPosX = route.Item1.Tiles[tileIndexToPick].PosX;
-          map[doorPosY, doorPosX] = (int)MapCellStates.DOOR + route.Item2;
+        if (corridor.lockCode != 0) {
+          int tileIndexToPick = random.Next(corridor.route.Tiles.Count);
+          int doorPosY = corridor.route.Tiles[tileIndexToPick].PosY;
+          int doorPosX = corridor.route.Tiles[tileIndexToPick].PosX;
+          map[doorPosY, doorPosX] = (int)MapCellStates.DOOR + corridor.lockCode;
         }
       }
     }
