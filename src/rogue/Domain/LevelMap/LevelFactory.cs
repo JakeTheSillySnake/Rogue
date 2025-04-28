@@ -11,6 +11,8 @@
       Random random = new();
 
       List<Room> rooms = GenerateRooms(map, random);
+      PlaceRoomsOnMap(map, rooms);
+
       List<(Room, Room, int)> roomMST = GenerateMST(map, random, rooms);
       List<int> keyPositions = GenerateDOOM(map, random, rooms, roomMST);
       List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
@@ -112,7 +114,7 @@
       List<Corridor> routes = new List<Corridor>();
 
       foreach (var routePointPair in doorMST) {
-        routes.Add(new Corridor(new Route(routePointPair.Item1.posY, routePointPair.Item2.posY,
+        routes.Add(new Corridor(new Route(map, routePointPair.Item1.posY, routePointPair.Item2.posY,
                               routePointPair.Item1.posX, routePointPair.Item2.posX),
                     routePointPair.Item3));
       }

@@ -2,7 +2,7 @@
   public class Route {
     public List<Tile> Tiles { get; set; }
     public bool visited { get; set; } = false;
-    public Route(int posYA, int posYB, int posXA, int posXB) {
+    public Route(int[,] map, int posYA, int posYB, int posXA, int posXB) {
       Tiles = [new(posYA, posXA)];
       List<(double distance, int posY, int posX)> bestTile = [];
 
@@ -17,6 +17,11 @@
                       Tiles.Last().PosY, Tiles.Last().PosX + 1));
 
         bestTile.Sort();
+
+        while (map[bestTile[0].posY, bestTile[0].posX] != (int)MapCellStates.BUSY)
+        {
+          bestTile.Remove(bestTile[0]);
+        }
 
         Tiles.Add(new Tile(bestTile.First().posY, bestTile.First().posX));
       }
