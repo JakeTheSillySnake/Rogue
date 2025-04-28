@@ -2,162 +2,94 @@ namespace rogue.Domain;
 
 using System.Collections.Generic;
 using rogue.Domain.LevelMap;
+using rogue.Domain.Items;
 using rogue.Data;
 
-public class Entity {
-  public int x { get; set; }
-  public int y { get; set; }
-  public int hp { get; set; }
-  public int hp_max { get; set; }
-  public int str { get; set; }
-  public int agl { get; set; }
-  public int color { get; set; }
-  public string symbol { get; set; }
-  public static int valLow = 3, valMid = 5, valHigh = 10;
-
-  public Entity() {
-    symbol = "";
-  }
-
-  public void InitCoords(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  public int DistanceToTarget(int x, int y) {
-    int distY = Math.Abs(this.y - y);
-    int distX = Math.Abs(this.x - x);
-    int dist = (int)Math.Sqrt(Math.Pow(distX, 2) + Math.Pow(distY, 2));
-    return dist;
-  }
-
-  public virtual bool CheckRight(Level lvl, int dist) {
-    if (lvl.field[y, x + dist] < (int)MapCellStates.WALL ||
-        lvl.field[y, x + dist] >= Level.itemCode ||
-        lvl.field[y, x + dist] == (int)MapCellStates.DOOR)
-      return true;
-    else
-      return false;
-  }
-
-  public virtual bool CheckLeft(Level lvl, int dist) {
-    if (lvl.field[y, x - dist] < (int)MapCellStates.WALL ||
-        lvl.field[y, x - dist] >= Level.itemCode ||
-        lvl.field[y, x - dist] == (int)MapCellStates.DOOR)
-      return true;
-    else
-      return false;
-  }
-
-  public virtual bool CheckUp(Level lvl, int dist) {
-    if (lvl.field[y - dist, x] < (int)MapCellStates.WALL ||
-        lvl.field[y - dist, x] >= Level.itemCode ||
-        lvl.field[y - dist, x] == (int)MapCellStates.DOOR)
-      return true;
-    else
-      return false;
-  }
-
-  public virtual bool CheckDown(Level lvl, int dist) {
-    if (lvl.field[y + dist, x] < (int)MapCellStates.WALL ||
-        lvl.field[y + dist, x] >= Level.itemCode ||
-        lvl.field[y + dist, x] == (int)MapCellStates.DOOR)
-      return true;
-    else
-      return false;
-  }
-}
-
 public class Player : Entity {
-  public int lvl { get; set; }
-  public bool asleep { get; set; }
-  public string effect { get; set; }
-  public int effCount { get; set; }
+  public int Lvl { get; set; } = 1;
+  public string Effect { get; set; } = "";
+  public int EffCount { get; set; } = 0;
   public Inventory backpack = new();
   public Weapon currWeapon = new();
   public Potion currPotion = new();
 
   public Player(int x, int y) {
-    lvl = 1;
-    asleep = false;
-    effect = "";
-    effCount = 0;
-    symbol = "p";
-    hp = 2 * valHigh;
-    hp_max = 2 * valHigh;
-    str = valMid;
-    agl = valMid;
-    color = (int)Colors.BLUE;
+    Symbol = "p";
+    Hp = 2 * valHigh;
+    Hp_max = 2 * valHigh;
+    Str= valMid;
+    Agl = valMid;
+    Color = (int)Colors.BLUE;
     InitCoords(x, y);
   }
 
   public List<int> Move(int action, Level lvl, Statistics stats) {
     ProcessEffects();
     List<int> res = [0, 0];
-    if (asleep) {
-      asleep = false;
+    if (Asleep) {
+      Asleep = false;
       return res;
     }
     if (action == 'a' || action == 'A') {
       if (CheckLeft(lvl, 1)) {
-        x--;
+        PosX--;
         stats.DistWalked++;
       } else
-        res = Attack(lvl, x - 1, y);
+        res = Attack(lvl, PosX - 1, PosY);
     }
     if (action == 'd' || action == 'D') {
       if (CheckRight(lvl, 1)) {
-        x++;
+        PosX++;
         stats.DistWalked++;
       } else
-        res = Attack(lvl, x + 1, y);
+        res = Attack(lvl, PosX + 1, PosY);
     }
     if (action == 'w' || action == 'W') {
       if (CheckUp(lvl, 1)) {
-        y--;
+        PosY--;
         stats.DistWalked++;
       } else
-        res = Attack(lvl, x, y - 1);
+        res = Attack(lvl, PosX, PosY - 1);
     }
     if (action == 's' || action == 'S') {
       if (CheckDown(lvl, 1)) {
-        y++;
+        PosY++;
         stats.DistWalked++;
       } else
-        res = Attack(lvl, x, y + 1);
+        res = Attack(lvl, PosX, PosY + 1);
     }
     return res;
   }
 
   public void ProcessEffects() {
-    if (effCount > 0)
-      effCount--;
-    else if (effect != "") {
-      if (effect == "Health") {
-        hp_max = hp_max - currPotion.value > 0 ? hp_max - currPotion.value : 1;
-        hp = hp - currPotion.value > 0 ? hp - currPotion.value : 1;
-      } else if (effect == "Strength")
-        str -= currPotion.value;
-      else if (effect == "Agility")
-        agl -= currPotion.value;
-      effect = "";
+    if (EffCount > 0)
+      EffCount--;
+    else if (Effect != "") {
+      if (Effect == "Health") {
+        Hp_max = Hp_max - currPotion.Value > 0 ? Hp_max - currPotion.Value : 1;
+        Hp = Hp - currPotion.Value > 0 ? Hp - currPotion.Value : 1;
+      } else if (Effect == "Strength")
+        Str-= currPotion.Value;
+      else if (Effect == "Agility")
+        Agl -= currPotion.Value;
+      Effect = "";
     }
   }
 
   public (bool, int) ProcessDamage(int damage, string type) {
     // successful vampire attack
     if (damage > 0 && type == "v")
-      hp_max -= 2;
+      Hp_max -= 2;
     else if (damage > 0 && type == "s") {
       // successful snake attack
       Random rnd = new();
       if (rnd.Next(1, 4) == 1)
-        asleep = true;
+        Asleep = true;
     }
-    hp -= damage;
-    if (hp < 0)
-      hp = 0;
-    if (hp == 0)
+    Hp -= damage;
+    if (Hp < 0)
+      Hp = 0;
+    if (Hp == 0)
       return (true, damage);
     else
       return (false, damage);
@@ -169,17 +101,17 @@ public class Player : Entity {
         lvl.field[targetY, targetX] >= Level.itemCode)
       return res;
     int pos = lvl.field[targetY, targetX] - Level.enemyCode;
-    int enemyAgl = lvl.enemies[pos].agl, chance;
+    int enemyAgl = lvl.enemies[pos].Agl, chance;
     Random rnd = new();
-    if (enemyAgl < agl)
+    if (enemyAgl < Agl)
       chance = 40;
-    else if (enemyAgl == agl)
+    else if (enemyAgl == Agl)
       chance = 60;
     else
       chance = 80;
     int hitOrMiss = rnd.Next(101);
     if (hitOrMiss <= chance)
-      res[1] = str;  // hit
+      res[1] = Str;  // hit
     else
       res[1] = 0;  // miss
     res[0] = lvl.field[targetY, targetX];
@@ -191,39 +123,39 @@ public class Player : Entity {
       return -1;
     int pos = lvl.field[targetY, targetX] - Level.itemCode;
     var i = lvl.items[pos];
-    if (!i.active)
+    if (!i.Active)
       return -1;
     if (i is Treasure)
-      AddTreasure(i.value);
+      AddTreasure(i.Value);
     else if (!backpack.AddItem(i))
       return -1;
-    i.active = false;
-    i.symbol = "";
+    i.Active = false;
+    i.Symbol = "";
     return pos;
   }
 
   public void UseItem(Item item, Statistics stats) {
-    if (item.subtype == "Health" && item is Food)
-      hp = (hp + item.value > hp_max) ? hp_max : hp + item.value;
-    else if (item.subtype == "Health") {
-      hp_max += item.value;
-      hp += item.value;
-    } else if (item.subtype == "Strength")
-      str += item.value;
-    else if (item.subtype == "Agility")
-      agl += item.value;
+    if (item.Subtype == "Health" && item is Food)
+      Hp = (Hp + item.Value > Hp_max) ? Hp_max : Hp + item.Value;
+    else if (item.Subtype == "Health") {
+      Hp_max += item.Value;
+      Hp += item.Value;
+    } else if (item.Subtype == "Strength")
+      Str+= item.Value;
+    else if (item.Subtype == "Agility")
+      Agl += item.Value;
     if (item is Weapon) {
-      if (currWeapon.equipped)
-        str -= currWeapon.value;
-      currWeapon.equipped = true;
-      currWeapon.name = item.name;
-      currWeapon.value = item.value;
+      if (currWeapon.Equipped)
+        Str-= currWeapon.Value;
+      currWeapon.Equipped = true;
+      currWeapon.Name = item.Name;
+      currWeapon.Value = item.Value;
     }
     if (item is Potion p) {
-      effCount = 0;
+      EffCount = 0;
       ProcessEffects();
-      effect = p.subtype;
-      effCount = p.effectLen;
+      Effect = p.Subtype;
+      EffCount = p.EffectLen;
       currPotion = p;
     }
     backpack.RemoveItem(item, stats);
@@ -232,17 +164,17 @@ public class Player : Entity {
   public bool UseKey(Key key, Level lvl) {
     bool ok = true;
     int door;
-    if (key.value == (int)Colors.BLUE)
+    if (key.Value == (int)Colors.BLUE)
       door = (int)MapCellStates.DOOR_BLUE;
-    else if (key.value == (int)Colors.RED)
+    else if (key.Value == (int)Colors.RED)
       door = (int)MapCellStates.DOOR_RED;
     else
       door = (int)MapCellStates.DOOR_GREEN;
-    if (lvl.field[y, x + 1] == door || lvl.field[y, x - 1] == door || lvl.field[y - 1, x] == door ||
-        lvl.field[y + 1, x] == door) {
+    if (lvl.field[PosY, PosX + 1] == door || lvl.field[PosY, PosX - 1] == door || lvl.field[PosY - 1, PosX] == door ||
+        lvl.field[PosY + 1, PosX] == door) {
       // found door
       foreach (var d in lvl.doors) {
-        if (d.color == key.value)
+        if (d.color == key.Value)
           d.lockState = (int)DoorLockState.OPEN;
       }
       backpack.RemoveItem(key, new Statistics());
@@ -252,10 +184,10 @@ public class Player : Entity {
   }
 
   public void RemoveCurrWeapon() {
-    currWeapon.equipped = false;
-    var w = new Weapon { name = currWeapon.name, value = currWeapon.value };
+    currWeapon.Equipped = false;
+    var w = new Weapon { Name = currWeapon.Name, Value = currWeapon.Value };
     backpack.AddItem(w);
-    str -= currWeapon.value;
+    Str-= currWeapon.Value;
   }
 
   public void AddTreasure(int num) {

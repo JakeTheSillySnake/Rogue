@@ -18,14 +18,7 @@
     KEY_BLUE
   }
 
-enum Colors {
-  BLUE = 1,
-  WHITE,
-  RED,
-  YELLOW,
-  GREEN,
-  MAGENTA
-}
+  enum Colors { BLUE = 1, WHITE, RED, YELLOW, GREEN, MAGENTA }
 
-enum DoorLockState { OPEN, LOCKED }
+  enum DoorLockState { OPEN, LOCKED }
 }

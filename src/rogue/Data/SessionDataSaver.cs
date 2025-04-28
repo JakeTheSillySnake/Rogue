@@ -2,51 +2,49 @@ namespace rogue.Data;
 
 using rogue.Domain;
 using rogue.Domain.LevelMap;
+using rogue.Domain.Enemies;
+using rogue.Domain.Items;
 using System.Collections.Generic;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 public static class SessionDataSaver {
+  public class SessionDataJSON {
+    public List<List<int>> FieldData { get; set; }
+    public List<Enemy> Enemies { get; set; }
+    public List<Item> Items { get; set; }
+    public List<Door> Doors { get; set; }
+    public List<Room> Rooms { get; set; }
+    public List<(Route, int)> Corridors { get; set; }
+    public Player Player { get; set; }
+    public Statistics Stats { get; set; }
 
-    public class SessionDataJSON
-    {
-        public List<List<int>> FieldData { get; set; }
-        public List<Enemy> Enemies { get; set; }
-        public List<Item> Items { get; set; }
-        public List<Door> Doors { get; set; }
-        public List<Room> Rooms { get; set; }
-        public List<Corridor> Corridors { get; set; }
-        public Player Player { get; set; }
-        public Statistics Stats { get; set; }
-
-        public SessionDataJSON(SessionData sessionData) {
-            FieldData = Enumerable.Range(0, sessionData.Field.GetLength(0))
-                .Select(i => Enumerable.Range(0, sessionData.Field.GetLength(1))
-                .Select(j => sessionData.Field[i, j])
-                .ToList())
-                .ToList();
-            Enemies = sessionData.Enemies;
-            Items = sessionData.Items;
-            Doors = sessionData.Doors;
-            Rooms = sessionData.Rooms;
-            Corridors = sessionData.Corridors;
-            Player = sessionData.Player;
-            Stats = sessionData.Stats;
-        }
-
-        public SessionDataJSON()
-        {
-            FieldData = [];
-            Enemies = [];
-            Items = [];
-            Doors = [];
-            Rooms = [];
-            Corridors = [];
-            Player = new(0, 0);
-            Stats = new();
-        }
+    public SessionDataJSON(SessionData sessionData) {
+      FieldData = [..Enumerable.Range(0, sessionData.Field.GetLength(0))
+                       .Select(i => Enumerable.Range(0, sessionData.Field.GetLength(1))
+                                        .Select(j => sessionData.Field[i, j])
+                                        .ToList())];
+      Enemies = sessionData.Enemies;
+      Items = sessionData.Items;
+      Doors = sessionData.Doors;
+      Rooms = sessionData.Rooms;
+      Corridors = sessionData.Corridors;
+      Player = sessionData.Player;
+      Stats = sessionData.Stats;
     }
-    public static SessionData LoadData(Level lvl, Player p, Statistics s) {
-    SessionData sessionData = new SessionData();
+
+    public SessionDataJSON() {
+      FieldData = [];
+      Enemies = [];
+      Items = [];
+      Doors = [];
+      Rooms = [];
+      Corridors = [];
+      Player = new(0, 0);
+      Stats = new();
+    }
+  }
+  public static SessionData LoadData(Level lvl, Player p, Statistics s) {
+    SessionData sessionData = new();
     sessionData.Field = lvl.field;
     sessionData.Enemies = lvl.enemies;
     sessionData.Items = lvl.items;
@@ -61,42 +59,35 @@ public static class SessionDataSaver {
   }
 
   public static void SaveSessionData(SessionDataJSON sessionDataJSON) {
-    var options = new JsonSerializerOptions
-      {
-        WriteIndented = true
-      };
     string savePath = FindCorrectFilePath();
-    string json = JsonSerializer.Serialize(sessionDataJSON, options);
+    string json = JsonConvert.SerializeObject(
+        sessionDataJSON, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
 
     Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
     File.WriteAllText(savePath, json);
   }
 
-  public static SessionData? GetSessionData()
-  {
-    SessionDataJSON? sessionDataJSON = new SessionDataJSON();
-    SessionData ?sessionData = new SessionData();
+  public static SessionData? GetSessionData() {
+    SessionDataJSON? sessionDataJSON = new();
+    SessionData? sessionData = new();
     string savePath = FindCorrectFilePath();
-    if (File.Exists(savePath))
-    {
+    if (File.Exists(savePath)) {
       string json = File.ReadAllText(savePath);
-      sessionDataJSON = JsonSerializer.Deserialize<SessionDataJSON>(json);
+      sessionDataJSON = JsonConvert.DeserializeObject<SessionDataJSON>(
+          json, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
       sessionData = ConvertSessionData(sessionDataJSON);
-    } else
-    {
+    } else {
       sessionData = null;
     }
     return sessionData;
   }
 
-  public static SessionData ConvertSessionData(SessionDataJSON sessionDataJSON)
-  {
-    SessionData sessionData = new SessionData();
+  public static SessionData ConvertSessionData(SessionDataJSON sessionDataJSON) {
+    SessionData sessionData = new();
 
-    sessionDataJSON.FieldData
-      .SelectMany((row, i) => row.Select((val, j) => (i, j, val)))
-      .ToList()
-      .ForEach(t => sessionData.Field[t.i, t.j] = t.val);
+    sessionDataJSON.FieldData.SelectMany((row, i) => row.Select((val, j) => (i, j, val)))
+        .ToList()
+        .ForEach(t => sessionData.Field[t.i, t.j] = t.val);
     sessionData.Enemies = sessionDataJSON.Enemies;
     sessionData.Items = sessionDataJSON.Items;
     sessionData.Doors = sessionDataJSON.Doors;
@@ -105,13 +96,12 @@ public static class SessionDataSaver {
     sessionData.Player = sessionDataJSON.Player;
     sessionData.Stats = sessionDataJSON.Stats;
 
-        return sessionData;
+    return sessionData;
   }
 
-  public static string FindCorrectFilePath()
-  {
+  public static string FindCorrectFilePath() {
     string projectRoot =
-    Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\.."));
+        Path.GetFullPath("../");
     string path = Path.Combine(projectRoot, "saves", "SessionData.json");
     return path;
   }

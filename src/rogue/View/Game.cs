@@ -2,6 +2,7 @@ namespace rogue.View;
 
 using rogue.Domain;
 using rogue.Domain.LevelMap;
+using rogue.Domain.Items;
 using rogue.Data;
 
 class Game {
@@ -12,22 +13,21 @@ class Game {
   public Player player;
   public Statistics stats = new();
   public SessionData session = new();
-  public Queue<string> messages = new();
+  public Messages msg = new();
   public List<int> attackResult = [];
 
   public Game() {
     lvl = new(_difficulty);
     var playerPos = lvl.GetStartPos();
     player = new(playerPos[1], playerPos[0]);
-    session = SessionDataSaver.LoadData(lvl, player, stats);
   }
 
   public string UpdateGame(int action) {
-    messages.Clear();
+    msg.Clear();
     // check for level end
     List<int> endPos = lvl.GetEndPos();
-    if (endPos[0] == player.y && endPos[1] == player.x) {
-      if (player.lvl == 21)
+    if (endPos[0] == player.PosY && endPos[1] == player.PosX) {
+      if (player.Lvl == 21)
         isOver = true;
       else
         NextLevel();
@@ -36,20 +36,24 @@ class Game {
     // damage to enemy
     attackResult = player.Move(action, lvl, stats);
     killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
-    ProcessItemMessages();
+    msg.ProcessItemMessages(lvl, player, stats);
 
     // damage to player
-    string attacker = ProcessDamageMessages();
-    ProcessAttackMessages();
+    var res = msg.ProcessDamageMessages(lvl, player, stats);
+    string attacker = res.Item1;
+    isOver = res.Item2;
+    msg.ProcessAttackMessages(lvl, player, stats, attackResult, killEnemy);
+    if (isOver) 
+      SaveStats();
     return attacker;
   }
 
   public void NextLevel() {
-    player.lvl = player.lvl == 21 ? 21 : player.lvl + 1;
-    stats.Lvl = player.lvl;
+    player.Lvl = player.Lvl == 21 ? 21 : player.Lvl + 1;
+    stats.Lvl = player.Lvl;
     // adjust difficulty
-    _difficulty = player.lvl / 2;
-    if ((float)player.hp / player.hp_max <= 0.5)
+    _difficulty = player.Lvl / 2;
+    if ((float)player.Hp / player.Hp_max <= 0.5)
       _difficulty = _difficulty > 1 ? _difficulty - 1 : 1;
 
     lvl = new(_difficulty);
@@ -61,7 +65,7 @@ class Game {
 
   public bool UseItem(Item item) {
     bool success = true;
-    if (item is Weapon && player.currWeapon.equipped)
+    if (item is Weapon && player.currWeapon.Equipped)
       success = lvl.DropWeapon(player);
     if (item is Key k) {
       success = player.UseKey(k, lvl);
@@ -74,92 +78,6 @@ class Game {
 
   public void RemoveCurrWeapon() {
     player.RemoveCurrWeapon();
-  }
-
-  public void ProcessItemMessages() {
-    int pos = player.CollectItem(lvl, player.x, player.y);
-    if (pos < 0)
-      return;
-    var i = lvl.items[pos];
-    if (i is Weapon w)
-      lvl.PickUpWeapon(w);
-    string item = "";
-    if (i is Treasure) {
-      item = string.Format("{0} Coins", i.value);
-      stats.Treasure += i.value;
-    } else if (i is Potion || i is Scroll)
-      item = string.Format("{0} of {1}", i.type, i.subtype);
-    else if (i is Food || i is Weapon)
-      item = string.Format("{0}", i.name);
-    else if (i is Key)
-      item = string.Format("{0} Key", i.subtype);
-    messages.Enqueue(string.Format("You collected {0}!", item));
-  }
-
-  public string ProcessDamageMessages() {
-    foreach (var e in lvl.enemies) {
-      (bool, int)attack = (false, 0);
-      string attacker = "";
-      if (e is Zombie z) {
-        attack = player.ProcessDamage(z.Act(lvl, player), z.symbol);
-        attacker = "Zombie";
-      } else if (e is Vampire v) {
-        attack = player.ProcessDamage(v.Act(lvl, player), v.symbol);
-        attacker = "Vampire";
-      } else if (e is Ogre o) {
-        attack = player.ProcessDamage(o.Act(lvl, player), o.symbol);
-        attacker = "Ogre";
-      } else if (e is Ghost g) {
-        attack = player.ProcessDamage(g.Act(lvl, player), g.symbol);
-        attacker = "Ghost";
-      } else if (e is Snake s) {
-        attack = player.ProcessDamage(s.Act(lvl, player), s.symbol);
-        attacker = "Snake-Wizard";
-      } else if (e is Mimic m) {
-        attack = player.ProcessDamage(m.Act(lvl, player), m.symbol);
-        attacker = "Mimic";
-      }
-      isOver = attack.Item1;
-      lvl.UpdateField();
-      if (attack.Item2 > 0) {
-        messages.Enqueue(string.Format("You were hit by {0}! (-{1} HP)", attacker, attack.Item2));
-        stats.HitsReceived++;
-      }
-      if (isOver)
-        return attacker;
-    }
-    return "";
-  }
-
-  public void ProcessAttackMessages() {
-    if (attackResult[0] < Level.enemyCode)
-      return;
-    var e = lvl.enemies[attackResult[0] - Level.enemyCode];
-    string enemy = "";
-    if (e is Zombie) {
-      enemy = "Zombie";
-    } else if (e is Vampire) {
-      enemy = "Vampire";
-    } else if (e is Ogre) {
-      enemy = "Ogre";
-    } else if (e is Ghost) {
-      enemy = "Ghost";
-    } else if (e is Snake) {
-      enemy = "Snake";
-    } else if (e is Mimic) {
-      enemy = "Mimic";
-    }
-    if (enemy != "" && attackResult[1] != 0) {
-      messages.Enqueue(string.Format("You dealt {0} damage to {1}!", attackResult[1], enemy));
-      stats.HitsDealt++;
-      if (killEnemy) {
-        messages.Enqueue(string.Format("You defeated {0}!", enemy));
-        stats.Kills++;
-      }
-    } else if (enemy != "")
-      messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
-    if (player.asleep)
-      messages.Enqueue("You were stunned by Snake-Wizard!");
   }
 
   public bool LoadSession() {
@@ -175,5 +93,9 @@ class Game {
     player = session.Player;
     stats = session.Stats;
     return true;
+  }
+
+  public void SaveStats() {
+    // GameOverStatSaver here
   }
 }

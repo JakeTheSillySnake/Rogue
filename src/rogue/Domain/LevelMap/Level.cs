@@ -1,5 +1,8 @@
 namespace rogue.Domain.LevelMap;
 
+using rogue.Domain.Enemies;
+using rogue.Domain.Items;
+
 public class Level {
   public const int ROWS = 22, COLS = 80;
   public int[,] field = new int[ROWS, COLS];
@@ -9,11 +12,11 @@ public class Level {
   public List<Item> items = [];
   public List<Door> doors = [];
   public List<Room> rooms = [];
-  public List<Corridor> corridors = [];
+  public List<(Route, int)> corridors = [];
 
   public Level(int difficulty) {
     var factory = new LevelFactory();
-    var result = factory.createLevelMap(ROWS, COLS, difficulty);
+    var result = factory.CreateLevelMap(ROWS, COLS, difficulty);
     field = result.Item1;
     rooms = result.Item2;
     corridors = result.Item3;
@@ -94,7 +97,7 @@ public class Level {
   }
 
   public void SpawnItem(int type, int x, int y) {
-    if (type == (int)Items.WEAPON) 
+    if (type == (int)Items.WEAPON)
       items.Add(new Weapon());
     else if (type == (int)Items.POTION)
       items.Add(new Potion());
@@ -103,7 +106,8 @@ public class Level {
     else if (type == (int)Items.FOOD)
       items.Add(new Food());
     else if (type == (int)Items.TREASURE)
-      items.Add(new Treasure());;
+      items.Add(new Treasure());
+    ;
     int idx = items.Count - 1;
     items[idx].Spawn(x, y);
   }
@@ -121,8 +125,8 @@ public class Level {
   }
 
   public bool DropWeapon(Player p) {
-    var w = new Weapon { name = p.currWeapon.name, value = p.currWeapon.value };
-    int x = p.x, y = p.y;
+    var w = new Weapon { Name = p.currWeapon.Name, Value = p.currWeapon.Value };
+    int x = p.PosX, y = p.PosY;
     if (p.CheckLeft(this, 1))
       x--;
     else if (p.CheckRight(this, 1))
@@ -131,17 +135,17 @@ public class Level {
       y++;
     else if (p.CheckUp(this, 1))
       y--;
-    if (x == p.x && y == p.y)
+    if (x == p.PosX && y == p.PosY)
       return false;
     items.Add(w);
     w.Spawn(x, y);
-    w.floorState = field[y, x];
+    w.FloorState = field[y, x];
     field[y, x] = itemCode + items.Count - 1;
     return true;
   }
 
   public void PickUpWeapon(Weapon w) {
-    field[w.y, w.x] = w.floorState;
+    field[w.PosY, w.PosX] = w.FloorState;
   }
 
   public void UpdateField() {
@@ -152,12 +156,12 @@ public class Level {
       }
     }
     for (int i = 0; i < enemies.Count; i++) {
-      if (!enemies[i].dead)
-        field[enemies[i].y, enemies[i].x] = enemyCode + i;
+      if (!enemies[i].Dead)
+        field[enemies[i].PosY, enemies[i].PosX] = enemyCode + i;
     }
     for (int i = 0; i < items.Count; i++) {
-      if (items[i].active)
-        field[items[i].y, items[i].x] = itemCode + i;
+      if (items[i].Active)
+        field[items[i].PosY, items[i].PosX] = itemCode + i;
     }
     foreach (var d in doors) {
       if (d.lockState == (int)DoorLockState.OPEN)
@@ -172,8 +176,8 @@ public class Level {
     bool dead = enemies[pos].ProcessDamage(res[1]);
     int treasure = enemies[pos].GenTreasure() + difficulty;
     if (dead) {
-      SpawnItem((int)Items.TREASURE, enemies[pos].x, enemies[pos].y);
-      items[^1].value = treasure;
+      SpawnItem((int)Items.TREASURE, enemies[pos].PosX, enemies[pos].PosY);
+      items[^1].Value = treasure;
     }
     return dead;
   }

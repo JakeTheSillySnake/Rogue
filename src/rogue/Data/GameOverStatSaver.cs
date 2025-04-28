@@ -1,39 +1,55 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace rogue.Data;
 
-public class GameOverStatSaver {
-  public List<Statistics>? gameOverStatisticsList;
+public static class GameOverStatSaver {
+  public class GameOverStatisticsJSON {
+    public List<Statistics>? GameOverStatisticsList { get; private set; }
 
-  public GameOverStatSaver() {
+    public GameOverStatisticsJSON() {
+      GameOverStatisticsList = [];
+    }
+    public GameOverStatisticsJSON(List<Statistics> gameOverStatisticsList) {
+      GameOverStatisticsList = gameOverStatisticsList;
+    }
+  }
+
+  public static List<Statistics>? GetGameOverStatData() {
+    GameOverStatisticsJSON? gameOverStatisticsJSON = new GameOverStatisticsJSON();
+    List<Statistics> gameOverStatisticsList = new List<Statistics>();
     string savePath = FindCorrectFilePath();
     if (File.Exists(savePath)) {
       string json = File.ReadAllText(savePath);
-      gameOverStatisticsList = JsonSerializer.Deserialize<List<Statistics>>(json);
+      gameOverStatisticsJSON = JsonConvert.DeserializeObject<GameOverStatisticsJSON>(
+          json, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+      gameOverStatisticsList = gameOverStatisticsJSON.GameOverStatisticsList;
       if (gameOverStatisticsList == null) {
         gameOverStatisticsList = [];
       }
     } else {
-      gameOverStatisticsList = [];
+      gameOverStatisticsList = new List<Statistics>();
     }
+    return gameOverStatisticsList;
   }
 
-  public void AddRunStatistics(Statistics stat) {
+  public static void AddRunStatistics(List<Statistics> gameOverStatisticsList, Statistics stat) {
     gameOverStatisticsList.Add(stat);
   }
 
-  public void SaveToJSONBeforeTerminating() {
-    var options = new JsonSerializerOptions { WriteIndented = true };
+  public static void LoadData(List<Statistics> gameOverStatisticsList) {
+    GameOverStatisticsJSON? gameOverStatisticsJSON =
+        new GameOverStatisticsJSON(gameOverStatisticsList);
     string savePath = FindCorrectFilePath();
-    string json = JsonSerializer.Serialize(gameOverStatisticsList, options);
-
+    string json = JsonConvert.SerializeObject(
+        gameOverStatisticsJSON,
+        new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
     Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
     File.WriteAllText(savePath, json);
   }
 
-  public string FindCorrectFilePath() {
+  public static string FindCorrectFilePath() {
     string projectRoot =
-        Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\.."));
+        Path.GetFullPath("../");
     string path = Path.Combine(projectRoot, "saves", "GameoverData.json");
     return path;
   }
