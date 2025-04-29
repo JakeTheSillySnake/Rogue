@@ -96,6 +96,8 @@ class Game {
   }
 
   public void SaveStats() {
-    // GameOverStatSaver here
+    var statList = GameOverStatSaver.GetGameOverStatData();
+    GameOverStatSaver.AddRunStatistics(statList, stats);
+    GameOverStatSaver.LoadData(statList);
   }
 }

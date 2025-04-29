@@ -36,7 +36,7 @@ class Scene {
       if (!game.LoadSession()) {
         NCurses.Erase();
         NCurses.AttributeSet(NCurses.ColorPair(3));
-        NCurses.MoveAddString(5, 23, "Couldn't load session. Press any key to exit.");
+        NCurses.MoveAddString(1, 1, "Couldn't load session. Press any key to exit.");
         NCurses.GetChar();
         return;
       }
@@ -74,25 +74,31 @@ class Scene {
 
   public void LoadStats() {
     NCurses.Erase();
-    Leaderboard leaderboard = new();
-    var leadStats = leaderboard.LoadStats();
-    if (leadStats.Count > 0) {
-      NCurses.AttributeSet(NCurses.ColorPair(5));
-      NCurses.MoveAddString(
-          1, 1,
-          "Treasure | LVL | Kills | Hits Dealt | Hits Received | Food | Potions | Scrolls | Distance");
-    } else {
-      NCurses.AttributeSet(NCurses.ColorPair(4));
-      NCurses.MoveAddString(5, 23, "Nothing to display. Press any key to exit.");
+    var leadStats = GameOverStatSaver.GetGameOverStatData();
+    if (leadStats.Count == 0) {
+      NCurses.AttributeSet(NCurses.ColorPair(3));
+      NCurses.MoveAddString(1, 1, "Nothing to display. Press any key to exit.");
+      return;
     }
-    NCurses.AttributeSet(NCurses.ColorPair(2));
-    int count = 0;
-    foreach (var stat in leadStats) {
+    NCurses.AttributeSet(NCurses.ColorPair(5));
+    NCurses.MoveAddString(1, 1, "TOP-10 sessions sorted by treasure. Press any key to exit.");
+    var sortedStats = leadStats.OrderByDescending(s => s.Treasure);
+    int count = 1, id = 1;
+    foreach (var stat in sortedStats) {
+      NCurses.AttributeSet(NCurses.ColorPair(4));
+      NCurses.MoveAddString(2 + count, 1, string.Format("ID: {0}", id));
+      NCurses.AttributeSet(NCurses.ColorPair(2));
       NCurses.MoveAddString(
-          1 + count, 1,
-          string.Format("{0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8}", stat.Treasure,
-                        stat.Lvl, stat.Kills, stat.HitsDealt, stat.HitsReceived, stat.Food,
+          2 + count, 8,
+          string.Format(
+              "Treasure: {0} | LVL: {1} | Kills: {2} | Hits Dealt: {3} | Hits Received: {4}",
+              stat.Treasure, stat.Lvl, stat.Kills, stat.HitsDealt, stat.HitsReceived));
+      NCurses.MoveAddString(
+          3 + count, 8,
+          string.Format("Food: {0} | Potions: {1} | Scrolls: {2} | Distance Walked: {3}", stat.Food,
                         stat.Potions, stat.Scrolls, stat.DistWalked));
+      count += 3;
+      id++;
     }
   }
 
