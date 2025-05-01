@@ -310,12 +310,12 @@
 
       int roomToChoose = random.Next(1, rooms.Count);
       enterExitPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
-            enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+      enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
       bool isDoorNearby = IsDoorNearby(map, enterExitPosY, enterExitPosX);
       while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.EMPTY || isDoorNearby)
       {
-        enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
-                enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+        enterExitPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
+        enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
         isDoorNearby = IsDoorNearby(map, enterExitPosY, enterExitPosX);
       }
       map[enterExitPosY, enterExitPosX] = (int)MapCellStates.EXIT;
