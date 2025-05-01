@@ -13,7 +13,7 @@ public class Ghost : Enemy {
     Symbol = "g";
     Hp = 4 * valLow;
     Hp_max = 4 * valLow;
-    Str= valLow;
+    Str = valLow;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
     Hostility = 1;

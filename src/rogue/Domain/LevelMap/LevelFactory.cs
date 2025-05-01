@@ -6,8 +6,7 @@
         CreateLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
-        for (int x = 0; x < sizeX; x++)
-          map[y, x] = (int)MapCellStates.BUSY;
+        for (int x = 0; x < sizeX; x++) map[y, x] = (int)MapCellStates.BUSY;
       Random random = new();
 
       List<Room> rooms = GenerateRooms(map, random);
@@ -110,13 +109,13 @@
     }
 
     private List<Corridor> GenerateCorridors(int[,] map, Random random,
-                                                 List<(Door, Door, int)> doorMST) {
+                                             List<(Door, Door, int)> doorMST) {
       List<Corridor> routes = new List<Corridor>();
 
       foreach (var routePointPair in doorMST) {
         routes.Add(new Corridor(new Route(map, routePointPair.Item1.posY, routePointPair.Item2.posY,
-                              routePointPair.Item1.posX, routePointPair.Item2.posX),
-                    routePointPair.Item3));
+                                          routePointPair.Item1.posX, routePointPair.Item2.posX),
+                                routePointPair.Item3));
       }
 
       return routes;

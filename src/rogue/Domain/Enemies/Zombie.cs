@@ -9,7 +9,7 @@ public class Zombie : Enemy {
     Symbol = "z";
     Hp = 4 * valHigh;
     Hp_max = 4 * valHigh;
-    Str= valMid;
+    Str = valMid;
     Agl = valLow;
     Color = (int)Colors.GREEN;
     Hostility = 2;

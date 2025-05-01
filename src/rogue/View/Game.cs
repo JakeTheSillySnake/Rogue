@@ -43,7 +43,7 @@ class Game {
     string attacker = res.Item1;
     isOver = res.Item2;
     msg.ProcessAttackMessages(lvl, player, stats, attackResult, killEnemy);
-    if (isOver) 
+    if (isOver)
       SaveStats();
     return attacker;
   }
@@ -96,6 +96,8 @@ class Game {
   }
 
   public void SaveStats() {
-    // GameOverStatSaver here
+    var statList = GameOverStatSaver.GetGameOverStatData();
+    GameOverStatSaver.AddRunStatistics(statList, stats);
+    GameOverStatSaver.LoadData(statList);
   }
 }

@@ -103,6 +103,6 @@ public abstract class Enemy : Entity {
 
   public int GenTreasure() {
     Random rnd = new();
-    return rnd.Next(Hp_max, Str+ Agl + Hostility + Hp_max);
+    return rnd.Next(Hp_max, Str + Agl + Hostility + Hp_max);
   }
 }

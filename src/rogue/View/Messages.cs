@@ -7,16 +7,16 @@ using rogue.Domain.Enemies;
 using rogue.Domain.Items;
 
 public class Messages {
-    public Queue<string> messages = new();
+  public Queue<string> messages = new();
 
-    public Messages() {}
+  public Messages() {}
 
-    public void Clear () {
-        messages.Clear();
-    }
+  public void Clear() {
+    messages.Clear();
+  }
 
-    public void ProcessItemMessages(Level lvl, Player player, Statistics stats) {
-        int pos = player.CollectItem(lvl, player.PosX, player.PosY);
+  public void ProcessItemMessages(Level lvl, Player player, Statistics stats) {
+    int pos = player.CollectItem(lvl, player.PosX, player.PosY);
     if (pos < 0)
       return;
     var i = lvl.items[pos];
@@ -33,9 +33,9 @@ public class Messages {
     else if (i is Key)
       item = string.Format("{0} Key", i.Subtype);
     messages.Enqueue(string.Format("You collected {0}!", item));
-    }
+  }
 
-    public (string, bool) ProcessDamageMessages(Level lvl, Player player, Statistics stats) {
+  public (string, bool) ProcessDamageMessages(Level lvl, Player player, Statistics stats) {
     foreach (var e in lvl.enemies) {
       (bool, int)attack = (false, 0);
       string attacker = "";
@@ -70,7 +70,8 @@ public class Messages {
     return ("", false);
   }
 
-    public void ProcessAttackMessages(Level lvl, Player player, Statistics stats, List<int> attackResult, bool killEnemy) {
+  public void ProcessAttackMessages(Level lvl, Player player, Statistics stats,
+                                    List<int> attackResult, bool killEnemy) {
     if (attackResult[0] < Level.enemyCode)
       return;
     var e = lvl.enemies[attackResult[0] - Level.enemyCode];
@@ -105,30 +106,24 @@ public class Messages {
     messages.Clear();
     messages.Enqueue(
         string.Format("Level: {0}, treasure collected: {1}", stats.Lvl, stats.Treasure));
-    messages.Enqueue(string.Format("Used potions: {0}, scrolls: {1}, food: {2}",
-                                        stats.Potions, stats.Scrolls, stats.Food));
+    messages.Enqueue(string.Format("Used potions: {0}, scrolls: {1}, food: {2}", stats.Potions,
+                                   stats.Scrolls, stats.Food));
     messages.Enqueue(string.Format("Mobs killed: {0}, hits dealt: {1}, hits received: {2}",
-                                        stats.Kills, stats.HitsDealt,
-                                        stats.HitsReceived));
+                                   stats.Kills, stats.HitsDealt, stats.HitsReceived));
     messages.Enqueue(string.Format("Distance traveled: {0}", stats.DistWalked));
   }
 
   public void ListInventory(Player player) {
     messages.Clear();
     messages.Enqueue(string.Format("Treasure: {0} Coins", player.GetTreasure()));
-    messages.Enqueue(
-        string.Format("Potions: {0} (Press K to Use)", player.backpack.potions.Count));
-    messages.Enqueue(
-        string.Format("Scrolls: {0} (Press E to Use)", player.backpack.scrolls.Count));
-    messages.Enqueue(
-        string.Format("Food: {0} (Press J to Use)", player.backpack.food.Count));
-    messages.Enqueue(
-        string.Format("Weapons: {0} (Press H to Use)", player.backpack.weapons.Count));
-    messages.Enqueue(
-        string.Format("Keys: {0} (Press L to Use)", player.backpack.keys.Count));
+    messages.Enqueue(string.Format("Potions: {0} (Press K to Use)", player.backpack.potions.Count));
+    messages.Enqueue(string.Format("Scrolls: {0} (Press E to Use)", player.backpack.scrolls.Count));
+    messages.Enqueue(string.Format("Food: {0} (Press J to Use)", player.backpack.food.Count));
+    messages.Enqueue(string.Format("Weapons: {0} (Press H to Use)", player.backpack.weapons.Count));
+    messages.Enqueue(string.Format("Keys: {0} (Press L to Use)", player.backpack.keys.Count));
   }
 
-   public void ListItems(Player player, List<Item> items, int type, string stype) {
+  public void ListItems(Player player, List<Item> items, int type, string stype) {
     messages.Clear();
     if (items.Count == 0 && type != (int)Items.WEAPON) {
       messages.Enqueue("There is nothing here.");
@@ -156,8 +151,7 @@ public class Messages {
       if (i is Key)
         messages.Enqueue(string.Format("{0}. {1}", begin, name));
       else
-        messages.Enqueue(
-            string.Format("{0}. {1} ({2} +{3})", begin, name, i.Subtype, i.Value));
+        messages.Enqueue(string.Format("{0}. {1} ({2} +{3})", begin, name, i.Subtype, i.Value));
       begin++;
     }
   }

@@ -10,7 +10,7 @@ public class Ogre : Enemy {
     Symbol = "o";
     Hp = 4 * valHigh;
     Hp_max = 4 * valHigh;
-    Str= valHigh;
+    Str = valHigh;
     Agl = valLow;
     Color = (int)Colors.YELLOW;
     Hostility = 2;

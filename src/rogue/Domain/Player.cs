@@ -17,7 +17,7 @@ public class Player : Entity {
     Symbol = "p";
     Hp = 2 * valHigh;
     Hp_max = 2 * valHigh;
-    Str= valMid;
+    Str = valMid;
     Agl = valMid;
     Color = (int)Colors.BLUE;
     InitCoords(x, y);
@@ -69,7 +69,7 @@ public class Player : Entity {
         Hp_max = Hp_max - currPotion.Value > 0 ? Hp_max - currPotion.Value : 1;
         Hp = Hp - currPotion.Value > 0 ? Hp - currPotion.Value : 1;
       } else if (Effect == "Strength")
-        Str-= currPotion.Value;
+        Str -= currPotion.Value;
       else if (Effect == "Agility")
         Agl -= currPotion.Value;
       Effect = "";
@@ -141,12 +141,12 @@ public class Player : Entity {
       Hp_max += item.Value;
       Hp += item.Value;
     } else if (item.Subtype == "Strength")
-      Str+= item.Value;
+      Str += item.Value;
     else if (item.Subtype == "Agility")
       Agl += item.Value;
     if (item is Weapon) {
       if (currWeapon.Equipped)
-        Str-= currWeapon.Value;
+        Str -= currWeapon.Value;
       currWeapon.Equipped = true;
       currWeapon.Name = item.Name;
       currWeapon.Value = item.Value;
@@ -170,8 +170,8 @@ public class Player : Entity {
       door = (int)MapCellStates.DOOR_RED;
     else
       door = (int)MapCellStates.DOOR_GREEN;
-    if (lvl.field[PosY, PosX + 1] == door || lvl.field[PosY, PosX - 1] == door || lvl.field[PosY - 1, PosX] == door ||
-        lvl.field[PosY + 1, PosX] == door) {
+    if (lvl.field[PosY, PosX + 1] == door || lvl.field[PosY, PosX - 1] == door ||
+        lvl.field[PosY - 1, PosX] == door || lvl.field[PosY + 1, PosX] == door) {
       // found door
       foreach (var d in lvl.doors) {
         if (d.color == key.Value)
@@ -187,7 +187,7 @@ public class Player : Entity {
     currWeapon.Equipped = false;
     var w = new Weapon { Name = currWeapon.Name, Value = currWeapon.Value };
     backpack.AddItem(w);
-    Str-= currWeapon.Value;
+    Str -= currWeapon.Value;
   }
 
   public void AddTreasure(int num) {

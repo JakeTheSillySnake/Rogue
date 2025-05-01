@@ -100,8 +100,7 @@ public static class SessionDataSaver {
   }
 
   public static string FindCorrectFilePath() {
-    string projectRoot =
-        Path.GetFullPath("../");
+    string projectRoot = Path.GetFullPath("../");
     string path = Path.Combine(projectRoot, "saves", "SessionData.json");
     return path;
   }

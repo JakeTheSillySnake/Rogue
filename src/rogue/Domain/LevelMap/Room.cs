@@ -1,11 +1,11 @@
 ﻿namespace rogue.Domain.LevelMap {
   public class Room {
-    public int startPosX { get; private set; }
-    public int startPosY { get; private set; }
-    public int endPosX { get; private set; }
-    public int endPosY { get; private set; }
-    public int centerPosX { get; private set; }
-    public int centerPosY { get; private set; }
+    public int startPosX { get; set; }
+    public int startPosY { get; set; }
+    public int endPosX { get; set; }
+    public int endPosY { get; set; }
+    public int centerPosX { get; set; }
+    public int centerPosY { get; set; }
     public bool visited { get; set; } = false;
 
     public Room() : this(new Random(), 0, 0, 9, 9) {}
