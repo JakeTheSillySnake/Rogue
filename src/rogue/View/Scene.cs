@@ -258,7 +258,7 @@ class Scene {
       effect = string.Format("{0} ({1})", game.player.Effect, game.player.EffCount);
     NCurses.MoveAddString(
         Level.ROWS + Y_BORDER, X_BORDER + 1,
-        string.Format("LVL: {0}(21), Hp: {1}({2}), STR: {3}, Agl: {4}, EFFECTS: {5}",
+        string.Format("LVL: {0}(21), HP: {1}({2}), STR: {3}, Agl: {4}, EFFECTS: {5}",
                       game.player.Lvl, game.player.Hp, game.player.Hp_max, game.player.Str,
                       game.player.Agl, effect));
   }
