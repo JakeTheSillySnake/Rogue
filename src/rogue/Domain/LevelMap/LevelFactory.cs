@@ -184,16 +184,14 @@
 
     private List<(int, int)> GenerateEnemySpawns(int[,] map, Random random, List<Room> rooms,
                                                  int difficulty) {
-      List<(int, int)> enemySpawnList = new List<(int, int)>();
+      List<(int, int)> enemySpawnList = [];
       for (int i = 0; i < difficulty; i++) {
         int roomToChoose = random.Next(1, rooms.Count);
         int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY)
-        {
+        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY) {
           i--;
-        } else
-        {
+        } else {
           enemySpawnList.Add((enemyPosY, enemyPosX));
         }
       }
@@ -202,17 +200,14 @@
 
     private List<(int, int)> GenerateItemSpawns(int[,] map, Random random, List<Room> rooms,
                                                 int difficulty) {
-      List<(int, int)> itemSpawnList = new List<(int, int)>();
+      List<(int, int)> itemSpawnList = [];
       for (int i = 10; i > difficulty; i--) {
         int roomToChoose = random.Next(1, rooms.Count);
         int itemPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int itemPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        if (map[itemPosY, itemPosX] != (int)MapCellStates.BUSY)
-        {
+        if (map[itemPosY, itemPosX] != (int)MapCellStates.BUSY) {
           i--;
-        }
-        else
-        {
+        } else {
           itemSpawnList.Add((itemPosY, itemPosX));
         }
       }
@@ -311,34 +306,30 @@
       int enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
       int enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
 
-      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY)
-      {
-                enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
-                enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY) {
+        enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
+        enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
       }
       map[enterExitPosY, enterExitPosX] = (int)MapCellStates.ENTER;
 
       int roomToChoose = random.Next(1, rooms.Count);
       enterExitPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
-            enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+      enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
       bool isDoorNearby = IsDoorNearby(map, enterExitPosY, enterExitPosX);
-      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY || isDoorNearby)
-      {
+      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY || isDoorNearby) {
         enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
-                enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+        enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
         isDoorNearby = IsDoorNearby(map, enterExitPosY, enterExitPosX);
       }
       map[enterExitPosY, enterExitPosX] = (int)MapCellStates.EXIT;
     }
 
-    public bool IsDoorNearby(int[,] map, int posY, int posX)
-    {
+    public bool IsDoorNearby(int[,] map, int posY, int posX) {
       bool isDoorNearby = false;
-      for (int y = -1; y < 2; y++)
-      {
-        for (int x = -1; x < 2; x++)
-        {
-          isDoorNearby = isDoorNearby || (map[y + posY, x + posX] == (int)MapCellStates.WALL && Math.Abs(y + x) % 2 == 1);
+      for (int y = -1; y < 2; y++) {
+        for (int x = -1; x < 2; x++) {
+          isDoorNearby = isDoorNearby || (map[y + posY, x + posX] == (int)MapCellStates.WALL &&
+                                          Math.Abs(y + x) % 2 == 1);
         }
       }
       return isDoorNearby;

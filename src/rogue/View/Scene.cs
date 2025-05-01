@@ -84,7 +84,8 @@ class Scene {
     var sortedStats = leadStats.OrderByDescending(s => s.Treasure);
     int count = 1, id = 1;
     foreach (var stat in sortedStats) {
-      if (id > 10) break;
+      if (id > 10)
+        break;
       NCurses.AttributeSet(NCurses.ColorPair(4));
       NCurses.MoveAddString(2 + count, 1, string.Format("ID: {0}", id));
       NCurses.AttributeSet(NCurses.ColorPair(2));
