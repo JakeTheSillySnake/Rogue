@@ -195,7 +195,7 @@
         int roomToChoose = random.Next(1, rooms.Count);
         int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY)
+        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.EMPTY)
         {
           i--;
         } else
@@ -213,7 +213,7 @@
         int roomToChoose = random.Next(1, rooms.Count);
         int itemPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int itemPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        if (map[itemPosY, itemPosX] != (int)MapCellStates.BUSY)
+        if (map[itemPosY, itemPosX] != (int)MapCellStates.EMPTY)
         {
           i--;
         }
@@ -301,7 +301,7 @@
       int enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
       int enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
 
-      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY)
+      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.EMPTY)
       {
                 enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
                 enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
@@ -312,7 +312,7 @@
       enterExitPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
             enterExitPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
       bool isDoorNearby = IsDoorNearby(map, enterExitPosY, enterExitPosX);
-      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.BUSY || isDoorNearby)
+      while (map[enterExitPosY, enterExitPosX] != (int)MapCellStates.EMPTY || isDoorNearby)
       {
         enterExitPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
                 enterExitPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
@@ -328,7 +328,7 @@
       {
         for (int x = -1; x < 2; x++)
         {
-          isDoorNearby = isDoorNearby || (map[y + posY, x + posX] == (int)MapCellStates.WALL && Math.Abs(y + x) % 2 == 1);
+          isDoorNearby = isDoorNearby || (map[y + posY, x + posX] == (int)MapCellStates.DOOR && Math.Abs(y + x) % 2 == 1);
         }
       }
       return isDoorNearby;
