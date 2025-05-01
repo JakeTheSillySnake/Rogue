@@ -50,7 +50,6 @@ class Scene {
     } else if (c == (int)StartActions.Stats) {
       // load leaderboard stats from JSON
       LoadStats();
-      NCurses.GetChar();
     }
   }
 
@@ -81,10 +80,11 @@ class Scene {
       return;
     }
     NCurses.AttributeSet(NCurses.ColorPair(5));
-    NCurses.MoveAddString(1, 1, "TOP-10 sessions sorted by treasure. Press any key to exit.");
+    NCurses.MoveAddString(1, 1, "TOP-10 sessions sorted by treasure. Press ESC to exit.");
     var sortedStats = leadStats.OrderByDescending(s => s.Treasure);
     int count = 1, id = 1;
     foreach (var stat in sortedStats) {
+      if (id > 10) break;
       NCurses.AttributeSet(NCurses.ColorPair(4));
       NCurses.MoveAddString(2 + count, 1, string.Format("ID: {0}", id));
       NCurses.AttributeSet(NCurses.ColorPair(2));
@@ -100,6 +100,8 @@ class Scene {
       count += 3;
       id++;
     }
+    int ch = 0;
+    while (ch != CursesKey.ESC) ch = NCurses.GetChar();
   }
 
   public void ProcessKeys(int action) {
