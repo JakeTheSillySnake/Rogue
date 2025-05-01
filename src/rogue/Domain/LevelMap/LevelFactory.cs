@@ -195,7 +195,13 @@
         int roomToChoose = random.Next(1, rooms.Count);
         int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        enemySpawnList.Add((enemyPosY, enemyPosX));
+        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY)
+        {
+          i--;
+        } else
+        {
+          enemySpawnList.Add((enemyPosY, enemyPosX));
+        }
       }
       return enemySpawnList;
     }
@@ -207,7 +213,14 @@
         int roomToChoose = random.Next(1, rooms.Count);
         int enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
         int enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
-        itemSpawnList.Add((enemyPosY, enemyPosX));
+        if (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY)
+        {
+          i--;
+        }
+        else
+        {
+          itemSpawnList.Add((enemyPosY, enemyPosX));
+        }
       }
       return itemSpawnList;
     }
@@ -287,12 +300,38 @@
     private void PrepareEnterAndExit(int[,] map, Random random, List<Room> rooms) {
       int enemyPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
       int enemyPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+
+      while (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY)
+      {
+        enemyPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
+        enemyPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+      }
       map[enemyPosY, enemyPosX] = (int)MapCellStates.ENTER;
 
       int roomToChoose = random.Next(1, rooms.Count);
       enemyPosY = random.Next(rooms[roomToChoose].startPosY + 1, rooms[roomToChoose].endPosY);
       enemyPosX = random.Next(rooms[roomToChoose].startPosX + 1, rooms[roomToChoose].endPosX);
+      bool isDoorNearby = IsDoorNearby(map, enemyPosY, enemyPosX);
+      while (map[enemyPosY, enemyPosX] != (int)MapCellStates.BUSY || isDoorNearby)
+      {
+        enemyPosY = random.Next(rooms[0].startPosY + 1, rooms[0].endPosY);
+        enemyPosX = random.Next(rooms[0].startPosX + 1, rooms[0].endPosX);
+        isDoorNearby = IsDoorNearby(map, enemyPosY, enemyPosX);
+      }
       map[enemyPosY, enemyPosX] = (int)MapCellStates.EXIT;
+    }
+
+    public bool IsDoorNearby(int[,] map, int enemyPosY, int enemyPosX)
+    {
+      bool isDoorNearby = false;
+      for (int y = -1; y < 2; y++)
+      {
+        for (int x = -1; x < 2; x++)
+        {
+          isDoorNearby = isDoorNearby || (map[y + enemyPosY, x + enemyPosX] == (int)MapCellStates.WALL && Math.Abs(y + x) % 2 == 1);
+        }
+      }
+      return isDoorNearby;
     }
 
     public static double GetDistanceBetweenRooms(Room roomA, Room roomB) {
