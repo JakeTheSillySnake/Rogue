@@ -6,7 +6,9 @@
         CreateLevelMap(int sizeY, int sizeX, int difficulty) {
       int[,] map = new int[sizeY, sizeX];
       for (int y = 0; y < sizeY; y++)
-        for (int x = 0; x < sizeX; x++) map[y, x] = (int)MapCellStates.BUSY;
+        for (int x = 0; x < sizeX; x++)
+          map[y, x] = (int)MapCellStates.BUSY;
+
       Random random = new();
 
       List<Room> rooms = GenerateRooms(map, random);
@@ -16,10 +18,14 @@
       List<int> keyPositions = GenerateDOOM(map, random, rooms, roomMST);
       List<(Door, Door, int)> doorMST = GenerateDoors(map, random, roomMST);
       List<Corridor> routes = GenerateCorridors(map, random, doorMST);
+      PlaceCorridorsOnMap(map, random, routes);
+      PlaceDoorsOnMap(map, doorMST);
+      PlaceKeysOnMap(map, rooms, random, keyPositions);
+
       List<(int, int)> enemyPositionList = GenerateEnemySpawns(map, random, rooms, difficulty);
       List<(int, int)> itemPositionList = GenerateItemSpawns(map, random, rooms, difficulty);
-      AssembleMap(map, random, rooms, routes, doorMST, keyPositions, enemyPositionList,
-                  itemPositionList);
+      PrepareEnemiesItemsSpawnPlaces(map, enemyPositionList, itemPositionList);
+      PrepareEnterAndExit(map, random, rooms);
 
       return (map, rooms, routes);
     }
@@ -204,22 +210,6 @@
         itemSpawnList.Add((enemyPosY, enemyPosX));
       }
       return itemSpawnList;
-    }
-    private void AssembleMap(int[,] map, Random random, List<Room> rooms, List<Corridor> routes,
-                             List<(Door, Door, int)> doorMST, List<int> keyPositions,
-                             List<(int, int)> enemyPositionList,
-                             List<(int, int)> itemPositionList) {
-      PlaceRoomsOnMap(map, rooms);
-
-      PlaceCorridorsOnMap(map, random, routes);
-
-      PlaceDoorsOnMap(map, doorMST);
-
-      PlaceKeysOnMap(map, rooms, random, keyPositions);
-
-      PrepareEnemiesItemsSpawnPlaces(map, enemyPositionList, itemPositionList);
-
-      PrepareEnterAndExit(map, random, rooms);
     }
 
     private void PlaceRoomsOnMap(int[,] map, List<Room> rooms) {
