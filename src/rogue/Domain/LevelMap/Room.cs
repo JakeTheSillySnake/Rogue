@@ -14,8 +14,8 @@
       centerPosY = (startLimitPosY + endLimitPosY) / 2;
       centerPosX = (startLimitPosX + endLimitPosX) / 2;
 
-      startPosY = random.Next(startLimitPosY + 1, centerPosY - 1);
-      startPosX = random.Next(startLimitPosX + 1, centerPosX - 1);
+      startPosY = random.Next(startLimitPosY + 1, centerPosY);
+      startPosX = random.Next(startLimitPosX + 1, centerPosX);
       endPosY = random.Next(centerPosY + 1, endLimitPosY - 1);
       endPosX = random.Next(centerPosX + 1, endLimitPosX - 1);
 
