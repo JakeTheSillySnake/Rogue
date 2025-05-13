@@ -15,7 +15,7 @@ public class Vampire : Enemy {
     Str = valMid;
     Agl = valHigh;
     Color = (int)Colors.RED;
-    Hostility = 3;
+    Hostility = 4;
     InitCoords(x, y);
   }
 

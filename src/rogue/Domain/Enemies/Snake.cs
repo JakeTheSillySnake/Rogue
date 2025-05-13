@@ -14,15 +14,15 @@ public class Snake : Enemy {
     Str = valMid;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
-    Hostility = 3;
+    Hostility = 4;
     InitCoords(x, y);
   }
 
   public override void Move(Level lvl) {
     if (_steps > 0 &&
-        (lvl.field[PosY + _dirY, PosX] <= (int)MapCellStates.EXIT ||
+        (lvl.field[PosY + _dirY, PosX] < (int)MapCellStates.EXIT ||
          lvl.field[PosY + _dirY, PosX] >= Level.itemCode) &&
-        (lvl.field[PosY, PosX + _dirX] <= (int)MapCellStates.EXIT ||
+        (lvl.field[PosY, PosX + _dirX] < (int)MapCellStates.EXIT ||
          lvl.field[PosY + _dirY, PosX] >= Level.itemCode)) {
       PosX += _dirX;
       PosY += _dirY;

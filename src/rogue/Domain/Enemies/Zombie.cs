@@ -12,7 +12,7 @@ public class Zombie : Enemy {
     Str = valMid;
     Agl = valLow;
     Color = (int)Colors.GREEN;
-    Hostility = 2;
+    Hostility = 3;
     InitCoords(x, y);
   }
 

@@ -273,8 +273,12 @@ class Scene {
     NCurses.AttributeSet(CursesAttribute.BOLD);
     foreach (var e in game.lvl.enemies) {
       NCurses.AttributeSet(NCurses.ColorPair(e.Color));
-      if (render.fieldMask[e.PosY, e.PosX] >= Level.enemyCode)
-        NCurses.MoveAddString(e.PosY + Y_BORDER, e.PosX + X_BORDER, e.Symbol);
+      if (render.fieldMask[e.PosY, e.PosX] >= Level.enemyCode && !e.Dead) {
+        string symbol = e.Symbol == "" ? "." : e.Symbol;
+        if (e.Symbol == "")
+          NCurses.AttributeSet(NCurses.ColorPair(6));
+        NCurses.MoveAddString(e.PosY + Y_BORDER, e.PosX + X_BORDER, symbol);
+      }
     }
   }
 

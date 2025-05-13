@@ -16,21 +16,22 @@ public class Ghost : Enemy {
     Str = valLow;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
-    Hostility = 1;
+    Hostility = 2;
     InitCoords(x, y);
   }
 
   public override void Move(Level lvl) {
-    LoadRoom(lvl);
+    if (_minX == 0 && _maxX == 0)
+      LoadRooms(lvl.rooms);
     if (_timer == 0) {
       Random rnd = new();
       do {
-        PosX = rnd.Next(_minX, _maxX + 1);
-        PosY = rnd.Next(_minY, _maxY + 1);
+        PosX = rnd.Next(_minX, _maxX);
+        PosY = rnd.Next(_minY, _maxY);
       } while (lvl.field[PosY, PosX] == (int)MapCellStates.EXIT);
       _timer = 6;
-      // 20% chance to become invisible
-      if (rnd.Next(1, 5) == 2 && !Follow)
+      // 1/3 chance to become invisible
+      if (rnd.Next(1, 4) == 1 && !Follow)
         Symbol = "";
       else
         Symbol = "g";
@@ -38,15 +39,19 @@ public class Ghost : Enemy {
       _timer--;
   }
 
-  public void LoadRoom(Level lvl) {
-    int minX = PosX, maxX = PosX, minY = PosY, maxY = PosY;
-    while (CheckLeft(lvl, 1) || lvl.field[PosY, minX - 1] >= Level.enemyCode) minX--;
-    while (CheckRight(lvl, 1) || lvl.field[PosY, minX + 1] >= Level.enemyCode) maxX++;
-    while (CheckUp(lvl, 1) || lvl.field[minY - 1, PosX] >= Level.enemyCode) minY--;
-    while (CheckDown(lvl, 1) || lvl.field[maxY + 1, PosX] >= Level.enemyCode) maxY++;
-    _minX = minX;
-    _maxX = maxX;
-    _minY = minY;
-    _maxY = maxY;
+  public void LoadRooms(List<Room> rooms) {
+    foreach (var room in rooms) {
+      if (room.ContainsTarget(PosX, PosY)) {
+        _minX = room.startPosX + 1;
+        _maxX = room.endPosX;
+        _minY = room.startPosY + 1;
+        _maxY = room.endPosY;
+        break;
+      }
+    }
+  }
+
+  public override void ChangeSymbol() {
+    Symbol = "g";
   }
 }

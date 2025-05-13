@@ -13,7 +13,7 @@ public class Ogre : Enemy {
     Str = valHigh;
     Agl = valLow;
     Color = (int)Colors.YELLOW;
-    Hostility = 2;
+    Hostility = 3;
     InitCoords(x, y);
   }
 

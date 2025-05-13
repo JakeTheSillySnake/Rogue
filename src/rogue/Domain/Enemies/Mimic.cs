@@ -4,6 +4,8 @@ using rogue.Domain.LevelMap;
 
 public class Mimic : Enemy {
   private readonly string[] _items = ["!", "=", "+", "d"];
+  private int _dirY { get; set; } = 1;
+
   public Mimic(int x, int y) {
     Random rnd = new();
     Symbol = _items[rnd.Next(_items.Length)];
@@ -12,26 +14,22 @@ public class Mimic : Enemy {
     Str = valLow;
     Agl = valHigh;
     Color = (int)Colors.WHITE;
-    Hostility = 1;
+    Hostility = 2;
     InitCoords(x, y);
   }
 
-  public override void Move(Level lvl) {}
+  public override void Move(Level lvl) {
+    if (Symbol != "m")
+      return;
+    if (_dirY == 1 && CheckUp(lvl, 1))
+      PosY--;
+    else if (_dirY == -1 && CheckDown(lvl, 1))
+      PosY++;
+    else
+      _dirY *= -1;
+  }
 
-  public override int Attack(Player p) {
+  public override void ChangeSymbol() {
     Symbol = "m";
-    int chance;
-    Random rnd = new();
-    if (Agl < p.Agl)
-      chance = 40;
-    else if (Agl == p.Agl)
-      chance = 60;
-    else
-      chance = 80;
-    int hitOrMiss = rnd.Next(101);
-    if (hitOrMiss <= chance)
-      return Str;  // hit
-    else
-      return 0;  // miss
   }
 }

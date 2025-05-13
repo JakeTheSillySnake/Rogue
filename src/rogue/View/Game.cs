@@ -27,9 +27,10 @@ class Game {
     // check for level end
     List<int> endPos = lvl.GetEndPos();
     if (endPos[0] == player.PosY && endPos[1] == player.PosX) {
-      if (player.Lvl == 21)
+      if (player.Lvl == 21) {
         isOver = true;
-      else
+        SaveStats();
+      } else
         NextLevel();
       return "";
     }
@@ -49,12 +50,14 @@ class Game {
   }
 
   public void NextLevel() {
-    player.Lvl = player.Lvl == 21 ? 21 : player.Lvl + 1;
-    stats.Lvl = player.Lvl;
+    player.Lvl++;
+    stats.Lvl++;
     // adjust difficulty
-    _difficulty = player.Lvl / 2;
+    _difficulty = player.Lvl % 2 == 0 ? _difficulty : _difficulty + 1;
     if ((float)player.Hp / player.Hp_max <= 0.5)
-      _difficulty = _difficulty > 1 ? _difficulty - 1 : 1;
+      _difficulty = _difficulty > 2 ? _difficulty - 2 : 1;
+    if (_difficulty > 10)
+      _difficulty = 10;
 
     lvl = new(_difficulty);
     var playerPos = lvl.GetStartPos();

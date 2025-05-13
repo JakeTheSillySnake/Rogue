@@ -14,8 +14,8 @@ public class Render {
         fieldMask[y, x] = lvl.field[y, x];
       }
     }
-    RenderRooms(lvl, p);
-    RenderCorridors(lvl, p);
+    // RenderRooms(lvl, p);
+    // RenderCorridors(lvl, p);
     return fieldMask;
   }
 
