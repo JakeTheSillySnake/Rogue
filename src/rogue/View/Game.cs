@@ -7,7 +7,7 @@ using rogue.Data;
 
 class Game {
   public bool isOver = false, killEnemy = false;
-  private int _difficulty = 1;
+  public int _difficulty = 1;
 
   public Level lvl;
   public Player player;
@@ -24,6 +24,7 @@ class Game {
 
   public string UpdateGame(int action) {
     msg.Clear();
+    attackResult = player.Move(action, lvl, stats);
     // check for level end
     List<int> endPos = lvl.GetEndPos();
     if (endPos[0] == player.PosY && endPos[1] == player.PosX) {
@@ -35,7 +36,6 @@ class Game {
       return "";
     }
     // damage to enemy
-    attackResult = player.Move(action, lvl, stats);
     killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
     msg.ProcessItemMessages(lvl, player, stats);
 
@@ -52,8 +52,8 @@ class Game {
   public void NextLevel() {
     player.Lvl++;
     stats.Lvl++;
+    _difficulty = (int)Math.Ceiling(player.Lvl / 2.0);
     // adjust difficulty
-    _difficulty = player.Lvl % 2 == 0 ? _difficulty : _difficulty + 1;
     if ((float)player.Hp / player.Hp_max <= 0.5)
       _difficulty = _difficulty > 2 ? _difficulty - 2 : 1;
     if (_difficulty > 10)
@@ -63,6 +63,7 @@ class Game {
     var playerPos = lvl.GetStartPos();
     player.InitCoords(playerPos[1], playerPos[0]);
     player.backpack.keys.Clear();
+    lvl.UpdateField();
     session = SessionDataSaver.LoadData(lvl, player, stats);
   }
 

@@ -2,7 +2,7 @@ namespace rogue.Domain.Enemies;
 
 using rogue.Domain.LevelMap;
 
-enum Enemies { ZOMBIE = 0, VAMPIRE, OGRE, GHOST, SNAKE, MIMIC }
+enum Enemies { GHOST = 0, ZOMBIE, SNAKE, MIMIC, VAMPIRE, OGRE }
 
 public abstract class Enemy : Entity {
   public int Hostility { get; set; }

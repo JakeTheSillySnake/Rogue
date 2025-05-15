@@ -43,6 +43,7 @@ class Scene {
     }
     if (c <= (int)StartActions.New) {
       // game loop
+      game.lvl.UpdateField();
       while (c != 'Q' && c != 'q' && !game.isOver) {
         ProcessKeys(c);
         c = NCurses.GetChar();

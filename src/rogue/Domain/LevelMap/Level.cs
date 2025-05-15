@@ -6,7 +6,7 @@ using rogue.Domain.Items;
 public class Level {
   public const int ROWS = 22, COLS = 80;
   public int[,] field = new int[ROWS, COLS];
-  public static int enemyCode = 100, itemCode = 1000;
+  public const int enemyCode = 100, itemCode = 1000;
 
   public List<Enemy> enemies = [];
   public List<Item> items = [];
@@ -20,15 +20,17 @@ public class Level {
     field = result.Item1;
     rooms = result.Item2;
     corridors = result.Item3;
-    TransformRawMap();
+    TransformRawMap(difficulty);
   }
 
-  public void TransformRawMap() {
+  public void TransformRawMap(int difficulty) {
     Random rnd = new();
     for (int y = 0; y < ROWS; y++) {
       for (int x = 0; x < COLS; x++) {
         if (field[y, x] == (int)MapCellStates.ENEMY) {
-          int enemy = rnd.Next(Enum.GetNames(typeof(Enemies)).Length);
+          int enemyMax = (int)Math.Ceiling((double)difficulty / 2);
+          int enemyMin = enemyMax >= 2 ? enemyMax - 2 : 0;
+          int enemy = rnd.Next(enemyMin, enemyMax + 1);
           SpawnEnemy(enemy, x, y);
         }
         if (field[y, x] == (int)MapCellStates.ITEM) {
