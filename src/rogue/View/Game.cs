@@ -7,7 +7,7 @@ using rogue.Data;
 
 class Game {
   public bool isOver = false, killEnemy = false;
-  public int _difficulty = 1;
+  private int _difficulty = 1;
 
   public Level lvl;
   public Player player;
