@@ -157,13 +157,13 @@ public class Level {
           field[i, j] = (int)MapCellStates.EMPTY;
       }
     }
-    for (int i = 0; i < enemies.Count; i++) {
-      if (!enemies[i].Dead)
-        field[enemies[i].PosY, enemies[i].PosX] = enemyCode + i;
-    }
     for (int i = 0; i < items.Count; i++) {
       if (items[i].Active)
         field[items[i].PosY, items[i].PosX] = itemCode + i;
+    }
+    for (int i = 0; i < enemies.Count; i++) {
+      if (!enemies[i].Dead)
+        field[enemies[i].PosY, enemies[i].PosX] = enemyCode + i;
     }
     foreach (var d in doors) {
       if (d.lockState == (int)DoorLockState.OPEN)
@@ -175,6 +175,8 @@ public class Level {
     if (res[1] == 0)
       return false;
     int pos = res[0] - enemyCode;
+    if (enemies[pos] is Vampire v && v.firstMove)
+      res[1] = 0;
     bool dead = enemies[pos].ProcessDamage(res[1]);
     int treasure = enemies[pos].GenTreasure() + difficulty;
     if (dead) {

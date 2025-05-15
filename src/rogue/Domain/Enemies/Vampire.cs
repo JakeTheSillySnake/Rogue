@@ -5,7 +5,7 @@ using rogue.Domain.LevelMap;
 public class Vampire : Enemy {
   private int _dirX { get; set; } = 0;
   private int _dirY { get; set; } = 1;
-  private bool _firstMove { get; set; } = true;
+  public bool firstMove { get; set; } = true;
   // first player attack is miss
 
   public Vampire(int x, int y) {
@@ -36,8 +36,8 @@ public class Vampire : Enemy {
   }
 
   public override bool ProcessDamage(int damage) {
-    if (_firstMove) {
-      _firstMove = false;
+    if (firstMove) {
+      firstMove = false;
       return Dead;
     }
     Hp -= damage;

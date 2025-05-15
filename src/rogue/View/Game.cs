@@ -51,7 +51,7 @@ class Game {
 
   public void NextLevel() {
     player.Lvl++;
-    stats.Lvl++;
+    stats.Lvl = player.Lvl;
     _difficulty = (int)Math.Ceiling(player.Lvl / 2.0);
     // adjust difficulty
     if ((float)player.Hp / player.Hp_max <= 0.5)

@@ -23,7 +23,7 @@ public class Snake : Enemy {
         (lvl.field[PosY + _dirY, PosX] < (int)MapCellStates.EXIT ||
          lvl.field[PosY + _dirY, PosX] >= Level.itemCode) &&
         (lvl.field[PosY, PosX + _dirX] < (int)MapCellStates.EXIT ||
-         lvl.field[PosY + _dirY, PosX] >= Level.itemCode)) {
+         lvl.field[PosY, PosX + _dirX] >= Level.itemCode)) {
       PosX += _dirX;
       PosY += _dirY;
       _steps--;
