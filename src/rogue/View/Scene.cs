@@ -62,7 +62,7 @@ class Scene {
     msg.Enqueue("Exit");
     int count = 1, c = 0;
     NCurses.AttributeSet(NCurses.ColorPair(5));
-    NCurses.MoveAddString(5, 23, "Welcome to Rogue! Please choose action (0-4):");
+    NCurses.MoveAddString(5, 23, "Welcome to Rogue! Please choose action (1-4):");
     NCurses.AttributeSet(NCurses.ColorPair(2));
     foreach (string m in msg) {
       NCurses.MoveAddString(10 + count, 30, string.Format("{0}) {1}", count, m));
