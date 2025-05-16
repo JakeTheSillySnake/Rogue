@@ -53,7 +53,7 @@ public class Messages {
         attacker = "Ghost";
       } else if (e is Snake s) {
         attack = player.ProcessDamage(s.Act(lvl, player), s.Symbol);
-        attacker = "Snake-Wizard";
+        attacker = "Snake-Mage";
       } else if (e is Mimic m) {
         attack = player.ProcessDamage(m.Act(lvl, player), m.Symbol);
         attacker = "Mimic";
@@ -85,7 +85,7 @@ public class Messages {
     } else if (e is Ghost) {
       enemy = "Ghost";
     } else if (e is Snake) {
-      enemy = "Snake";
+      enemy = "Snake-Mage";
     } else if (e is Mimic) {
       enemy = "Mimic";
     }
@@ -99,7 +99,7 @@ public class Messages {
     } else if (enemy != "")
       messages.Enqueue(string.Format("You tried to hit {0} but missed!", enemy));
     if (player.Asleep)
-      messages.Enqueue("You were stunned by Snake-Wizard!");
+      messages.Enqueue("You were stunned by Snake-Mage!");
   }
 
   public void DrawStats(Statistics stats) {

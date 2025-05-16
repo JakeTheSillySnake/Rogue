@@ -7,7 +7,7 @@ public class Ogre : Enemy {
   private bool _counterAttack { get; set; } = false;
 
   public Ogre(int x, int y) {
-    Symbol = "o";
+    Symbol = "O";
     Hp = 4 * valHigh;
     Hp_max = 4 * valHigh;
     Str = valHigh;
