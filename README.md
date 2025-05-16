@@ -7,7 +7,7 @@ _Rogue dungeon level view._
 
 ## Introduction
 
-**Rogue** (meaning "rogue" or "scoundrel") is a computer game developed in 1980 by the company Epyx. Its main theme is dungeon exploration. The game was extremely popular on university Unix systems in the early 1980s and spawned an entire genre known as **roguelike** games.
+**Rogue** is a computer game developed in 1980 by the company Epyx. Its main theme is dungeon exploration. The game was extremely popular on university Unix systems in the early 1980s and spawned an entire genre known as **roguelike** games.
 
 In *Rogue*, the player takes on the typical role of an adventurer in an early fantasy role-playing game. The game begins on the very top level of an unmapped dungeon containing many monsters and treasures. Gradually, as the player progresses deeper into the randomly generated dungeon, the monsters grow stronger and advancing becomes more difficult.
 
@@ -87,6 +87,6 @@ Using any item from the backpack results in printing a list of items of that typ
 
 The game collects and displays, in a separate view, statistics of all playthroughs sorted by the number of treasures collected. This statistics include: number of treasures collected, highest level reached, number of enemies defeated, amount of food eaten, number of potions drunk, number of scrolls read, number of hits dealt and taken, and number of tiles traversed.
 
-## Contacts
+## P.s.
 
-If you wish to suggest an improvement or report a bug, contact me __@ginzburg_jake (Telegram) or JakeTheSillySnake (GitHub)__.
+This game is a collaborative effort. If you wish to suggest an improvement or report a bug, contact me __@ginzburg_jake (Telegram) or JakeTheSillySnake (GitHub)__.
