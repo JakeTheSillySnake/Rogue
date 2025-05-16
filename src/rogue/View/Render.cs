@@ -65,12 +65,6 @@ public class Render {
     int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
     int x = sourceX, y = sourceY;
     int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
-    if (sourceX == targetX)
-      while (y != targetY && fieldMask[y, x] != wall && fieldMask[y, x] != busy)
-        y = y > targetY ? y - 1 : y + 1;
-    if (sourceY == targetY)
-      while (x != targetX && fieldMask[y, x] != wall && fieldMask[y, x] != busy)
-        x = x > targetX ? x - 1 : x + 1;
     // bresenham’s algorithm
     bool ok;
     if (deltaX > deltaY)
@@ -88,7 +82,7 @@ public class Render {
     int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
     int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
     int decisionParam = 2 * deltaY - deltaX;
-    while (x != targetX && y != targetY && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
+    while (x != targetX && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
       if (decisionParam < 0) {
         decisionParam += 2 * deltaY;
       } else {
@@ -107,7 +101,7 @@ public class Render {
     int deltaX = Math.Abs(sourceX - targetX), deltaY = Math.Abs(sourceY - targetY);
     int wall = (int)MapCellStates.WALL, busy = (int)MapCellStates.BUSY;
     int decisionParam = 2 * deltaX - deltaY;
-    while (x != targetX && y != targetY && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
+    while (y != targetY && fieldMask[y, x] != busy && fieldMask[y, x] != wall) {
       if (decisionParam < 0) {
         decisionParam += 2 * deltaX;
       } else {

@@ -44,7 +44,8 @@ class Scene {
     if (c <= (int)StartActions.New) {
       // game loop
       game.lvl.UpdateField();
-      while (c != 'Q' && c != 'q' && !game.isOver) {
+      SessionDataSaver.LoadData(game.lvl, game.player, game.stats);
+      while (c != 'Q' && c != 'q') {
         ProcessKeys(c);
         c = NCurses.GetChar();
       }
@@ -78,6 +79,7 @@ class Scene {
     if (leadStats.Count == 0) {
       NCurses.AttributeSet(NCurses.ColorPair(3));
       NCurses.MoveAddString(1, 1, "Nothing to display. Press any key to exit.");
+      NCurses.GetChar();
       return;
     }
     NCurses.AttributeSet(NCurses.ColorPair(5));
@@ -97,7 +99,7 @@ class Scene {
               stat.Treasure, stat.Lvl, stat.Kills, stat.HitsDealt, stat.HitsReceived));
       NCurses.MoveAddString(
           3 + count, 8,
-          string.Format("Food: {0} | Potions: {1} | Scrolls: {2} | Distance Walked: {3}", stat.Food,
+          string.Format("Food Eaten: {0} | Potions Drunk: {1} | Scrolls Read: {2} | Distance Walked: {3}", stat.Food,
                         stat.Potions, stat.Scrolls, stat.DistWalked));
       count += 3;
       id++;
@@ -149,8 +151,11 @@ class Scene {
       if (action == act)
         DrawMessages();
     }
-    if (game.isOver)
+    if (game.isOver) {
       GameEndMessage(killer);
+      game = new();
+      SessionDataSaver.LoadData(game.lvl, game.player, game.stats);
+    }
     NCurses.Refresh();
     if (type != -1)
       ItemUsedMessage(items, game, type);
@@ -192,6 +197,7 @@ class Scene {
       }
       NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
       NCurses.MoveAddString(Level.ROWS + MSG_START, X_BORDER + 1, msg);
+      DrawStatusBar();
       NCurses.Refresh();
     }
   }
@@ -316,11 +322,11 @@ class Scene {
     string msg;
     if (killer == "") {
       NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
-      msg = string.Format("You completed the dungeon! Total score: {0}. Press any key to exit.",
+      msg = string.Format("You completed the dungeon! Total score: {0}. Press any key to restart.",
                           game.player.GetTreasure());
     } else {
       NCurses.AttributeSet(NCurses.ColorPair(3) | CursesAttribute.NORMAL);
-      msg = string.Format("You were defeated by {0}! Press any key to exit.", killer);
+      msg = string.Format("You were defeated by {0}! Press any key to restart.", killer);
     }
     NCurses.MoveAddString(Level.ROWS + MSG_START + game.msg.messages.Count, X_BORDER + 1, msg);
   }
