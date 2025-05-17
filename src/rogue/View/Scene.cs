@@ -99,8 +99,9 @@ class Scene {
               stat.Treasure, stat.Lvl, stat.Kills, stat.HitsDealt, stat.HitsReceived));
       NCurses.MoveAddString(
           3 + count, 8,
-          string.Format("Food Eaten: {0} | Potions Drunk: {1} | Scrolls Read: {2} | Distance Walked: {3}", stat.Food,
-                        stat.Potions, stat.Scrolls, stat.DistWalked));
+          string.Format(
+              "Food Eaten: {0} | Potions Drunk: {1} | Scrolls Read: {2} | Distance Walked: {3}",
+              stat.Food, stat.Potions, stat.Scrolls, stat.DistWalked));
       count += 3;
       id++;
     }
@@ -198,6 +199,7 @@ class Scene {
       NCurses.AttributeSet(NCurses.ColorPair(5) | CursesAttribute.NORMAL);
       NCurses.MoveAddString(Level.ROWS + MSG_START, X_BORDER + 1, msg);
       DrawStatusBar();
+      DrawScene();
       NCurses.Refresh();
     }
   }

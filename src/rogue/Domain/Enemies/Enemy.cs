@@ -8,6 +8,7 @@ public abstract class Enemy : Entity {
   public int Hostility { get; set; }
   public bool Follow { get; set; } = false;
   public bool Dead { get; set; } = false;
+  public int floor = 0;
 
   public Enemy() {}
 

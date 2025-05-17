@@ -129,14 +129,7 @@ public class Level {
   public bool DropWeapon(Player p) {
     var w = new Weapon { Name = p.currWeapon.Name, Value = p.currWeapon.Value };
     int x = p.PosX, y = p.PosY;
-    if (p.CheckLeft(this, 1))
-      x--;
-    else if (p.CheckRight(this, 1))
-      x++;
-    else if (p.CheckDown(this, 1))
-      y++;
-    else if (p.CheckUp(this, 1))
-      y--;
+    TryFindEmptyFloor(ref x, ref y, p);
     if (x == p.PosX && y == p.PosY)
       return false;
     items.Add(w);
@@ -162,8 +155,10 @@ public class Level {
         field[items[i].PosY, items[i].PosX] = itemCode + i;
     }
     for (int i = 0; i < enemies.Count; i++) {
-      if (!enemies[i].Dead)
+      if (!enemies[i].Dead) {
+        enemies[i].floor = field[enemies[i].PosY, enemies[i].PosX];
         field[enemies[i].PosY, enemies[i].PosX] = enemyCode + i;
+      }
     }
     foreach (var d in doors) {
       if (d.lockState == (int)DoorLockState.OPEN)
@@ -171,7 +166,7 @@ public class Level {
     }
   }
 
-  public bool ProcessDamage(List<int> res, int difficulty) {
+  public bool ProcessDamage(List<int> res, int difficulty, Player p) {
     if (res[1] == 0)
       return false;
     int pos = res[0] - enemyCode;
@@ -180,9 +175,25 @@ public class Level {
     bool dead = enemies[pos].ProcessDamage(res[1]);
     int treasure = enemies[pos].GenTreasure() + difficulty;
     if (dead) {
-      SpawnItem((int)Items.TREASURE, enemies[pos].PosX, enemies[pos].PosY);
+      int spawnX = enemies[pos].PosX, spawnY = enemies[pos].PosY;
+      if (enemies[pos].floor != (int)MapCellStates.EMPTY)
+        TryFindEmptyFloor(ref spawnX, ref spawnY, p);
+      SpawnItem((int)Items.TREASURE, spawnX, spawnY);
       items[^1].Value = treasure;
     }
     return dead;
+  }
+
+  void TryFindEmptyFloor(ref int x, ref int y, Player p) {
+    int[] positionsX = [-1, 0, 0, 1, -1, -1, 1, 1];
+    int[] positionsY = [0, -1, 1, 0, -1, 1, -1, 1];
+    for (int i = 0; i < 8; i++) {
+      if (field[y + positionsY[i], x + positionsX[i]] < (int)MapCellStates.EXIT &&
+          (y + positionsY[i] != p.PosY || x + positionsX[i] != p.PosX)) {
+        x += positionsX[i];
+        y += positionsY[i];
+        break;
+      }
+    }
   }
 }

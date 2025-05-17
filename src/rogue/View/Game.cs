@@ -36,7 +36,7 @@ class Game {
       return "";
     }
     // damage to enemy
-    killEnemy = lvl.ProcessDamage(attackResult, _difficulty);
+    killEnemy = lvl.ProcessDamage(attackResult, _difficulty, player);
     msg.ProcessItemMessages(lvl, player, stats);
 
     // damage to player
@@ -77,6 +77,7 @@ class Game {
         lvl.UpdateField();
     } else if (success)
       player.UseItem(item, stats);
+    lvl.UpdateField();
     return success;
   }
 
